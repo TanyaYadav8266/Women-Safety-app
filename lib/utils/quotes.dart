@@ -5,7 +5,7 @@ List sweetSayings = [
   "I am grateful to be a woman. I must have done something great in another life.",
   "The question isn’t who’s going to let me; it’s who is going to stop me.",
   "Well help you in the way we can",
-  "be strong",
+  "be strong","be happy",
 ];
 
 List<String> articleTitle = [
