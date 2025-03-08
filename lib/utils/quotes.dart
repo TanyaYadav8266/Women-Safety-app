@@ -1,18 +1,17 @@
 List sweetSayings = [
-  "There is no limit to what we, as women, can accomplish.",
-  "A woman is the full circle. Within her is the power to create, nurture, and transform.",
-  "She was powerful not because she wasn’t scared, but because she went on so strongly, despite the fear.",
-  "I am grateful to be a woman. I must have done something great in another life.",
-  "The question isn’t who’s going to let me; it’s who is going to stop me.",
-  "Well help you in the way we can",
-  "be strong","be happy",
+  "Your presence, lights up the whole room",
+  "We admire,Your strong personality.",
+  "We’ll help you In any way we can,",
+  "You are Strong and courageous",
+  'I say if I’m beautiful. I say if I’m strong',
+  'Above all, be the heroine of your life, not the victim',
 ];
 
 List<String> articleTitle = [
-  "Strength, courage, and power define you",
-  "Lead with grace, rise with power",
-  "Fearless, bold, unstoppable – that’s you",
-  "Your voice matters, make it heard"
+  "Pakistani women are inspiring country",
+  "We have to end Violance",
+  "Be a change",
+  "You are strong"
 ];
 List<String> imageSliders = [
   "https://media.istockphoto.com/photos/silhouette-of-super-strong-successful-businesswoman-picture-id1249879109?k=20&m=1249879109&s=612x612&w=0&h=I-joEMjqkq1wCJZJeLWUCd1d2HcB5WxBShdkA9YM0cg=",
