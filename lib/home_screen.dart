@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:title_proj/widgets/CustomCarouel.dart';
-import 'package:title_proj/widgets/custom_appBar.dart';
+import 'package:title_proj/widgets/home_widgets/CustomCarouel.dart';
+import 'package:title_proj/widgets/home_widgets/custom_appBar.dart';
+import 'package:title_proj/widgets/home_widgets/emergency.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -38,7 +40,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: (){
                   getRandomQuote();
                 }),
-              CustomCarouel(),
+                Expanded(
+                  child: ListView( 
+                    shrinkWrap: true,
+                    children: [
+                      CustomCarouel(),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Emergency",
+                          style:
+                                TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                      ),
+                      Emergency(),
+                    ],
+                  )
+                )
             ],
           ),
         ),

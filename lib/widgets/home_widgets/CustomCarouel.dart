@@ -2,7 +2,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:title_proj/utils/quotes.dart';
-import 'package:title_proj/widgets/safewebview.dart';
+import 'package:title_proj/widgets/home_widgets/safewebview.dart';
+
 
 
 
@@ -36,19 +37,19 @@ class CustomCarouel extends StatelessWidget {
                       context,
                       SafeWebView(
                           url:
-                              "https://gulfnews.com/world/asia/pakistan/womens-day-10-pakistani-women-inspiring-the-country-1.77696239"));
+                              "https://www.vantagecircle.com/en/blog/womens-safety-workplace/"));
                 } else if (index == 1) {
                   navigateToRoute(
                       context,
                       SafeWebView(
                           url:
-                              "https://plan-international.org/ending-violence/16-ways-end-violence-girls"));
+                              "http://ncw.nic.in/important-links/List-of-Laws-Related-to-Women"));
                 } else if (index == 2) {
                   navigateToRoute(
                       context,
                       SafeWebView(
                           url:
-                              "https://www.healthline.com/health/womens-health/self-defense-tips-escape"));
+                              "https://www.inspirethemind.org/post/what-will-it-take-for-women-to-feel-safe"));
                 } else {
                   navigateToRoute(
                       context,
