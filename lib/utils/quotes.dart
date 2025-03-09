@@ -1,18 +1,21 @@
 List sweetSayings = [
-  "Your presence, lights up the whole room",
-  "We admire,Your strong personality.",
-  "We’ll help you In any way we can,",
-  "You are Strong and courageous",
-  'I say if I’m beautiful. I say if I’m strong',
-  'Above all, be the heroine of your life, not the victim',
+  "Unstoppable. Fearless. Powerful.",
+  "Strength is within you.",
+  "Own your power, shine.",
+  "Believe, fight, conquer, repeat.",
+  "No limits, just courage.",
+  "Warrior. Resilient. Unbreakable.",
 ];
 
 List<String> articleTitle = [
-  "Pakistani women are inspiring country",
-  "We have to end Violance",
-  "Be a change",
-  "You are strong"
+  "Unbreakable Women",
+  "Empower. Inspire. Rise.",
+  "Breaking Limits",
+  "Fearless and Bold",
+  "Strength in Her",
+  "Rise, Woman, Rise"
 ];
+
 List<String> imageSliders = [
   "https://media.istockphoto.com/photos/silhouette-of-super-strong-successful-businesswoman-picture-id1249879109?k=20&m=1249879109&s=612x612&w=0&h=I-joEMjqkq1wCJZJeLWUCd1d2HcB5WxBShdkA9YM0cg=",
   "https://media.istockphoto.com/vectors/young-woman-looks-at-the-mirror-and-sees-her-happy-reflection-vector-id1278815846?k=20&m=1278815846&s=612x612&w=0&h=JUTmV9Of-_ILOfXBfV9Cmp_41yuTliSdFIcZy5LKuss=",
