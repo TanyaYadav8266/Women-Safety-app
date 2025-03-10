@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies.dart/FireBrigadeEmergency.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies/FireBrigadeEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies/AmbulanceEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies/ArmyEmergency.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies/policeemergency.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies/PoliceEmergency.dart';
 
 class Emergency extends StatelessWidget {
   const Emergency({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width,
-      height: 180,
+      height: 200, // Increased height to avoid clipping
       child: ListView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        children: [
+        children: const [
           PoliceEmergency(),
           AmbulanceEmergency(),
-          FireBrigadeEmergency(), // Fixed naming
+          FireBrigadeEmergency(),
           ArmyEmergency(),
         ],
       ),
