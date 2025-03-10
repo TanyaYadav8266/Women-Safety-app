@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies.dart/AmbulanceEmergency.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies.dart/ArmyEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies.dart/FireBrigadeEmergency.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies.dart/policeemergency.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies/AmbulanceEmergency.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies/ArmyEmergency.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies/policeemergency.dart';
 
 class Emergency extends StatelessWidget {
-  const Emergency({Key?key}):super(key: key);
+  const Emergency({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +15,13 @@ class Emergency extends StatelessWidget {
       child: ListView(
         physics: BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        children:[
+        children: [
           PoliceEmergency(),
           AmbulanceEmergency(),
-          FireBrigadeEmergency(),
+          FireBrigadeEmergency(), // Fixed naming
           ArmyEmergency(),
-        ]
-      )
+        ],
+      ),
     );
   }
 }

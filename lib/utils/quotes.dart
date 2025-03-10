@@ -15,6 +15,7 @@ List<String> articleTitle = [
   "Fearless and Bold",
   "Strength in Her",
   "Rise, Woman, Rise",
+
 ];
 
 List<String> imageSliders = [

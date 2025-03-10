@@ -37,19 +37,19 @@ class CustomCarouel extends StatelessWidget {
                       context,
                       SafeWebView(
                           url:
-                              "https://www.vantagecircle.com/en/blog/womens-safety-workplace/"));
+                              "https://sleepyclasses.com/womens-safety-in-india/"));
                 } else if (index == 1) {
                   navigateToRoute(
                       context,
                       SafeWebView(
                           url:
-                              "http://ncw.nic.in/important-links/List-of-Laws-Related-to-Women"));
+                              "https://www.unwomen.org/en/what-we-do/ending-violence-against-women/creating-safe-public-spaces"));
                 } else if (index == 2) {
                   navigateToRoute(
                       context,
                       SafeWebView(
                           url:
-                              "https://www.inspirethemind.org/post/what-will-it-take-for-women-to-feel-safe"));
+                              "https://wbl.worldbank.org/en/safety"));
                 } else {
                   navigateToRoute(
                       context,
