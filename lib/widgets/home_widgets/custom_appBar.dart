@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:title_proj/utils/quotes.dart';
 
+
+// ignore: must_be_immutable
 class CustomAppBar extends StatelessWidget {
   //const CustomAppBar({super.key});
   Function? onTap;
@@ -16,8 +18,10 @@ class CustomAppBar extends StatelessWidget {
       child: Container(
         child: Text(
           sweetSayings[quoteIndex!],
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 14,
+            fontWeight: FontWeight.bold
           ),
         ),
       ),

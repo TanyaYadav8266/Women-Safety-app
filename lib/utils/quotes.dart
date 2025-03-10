@@ -7,13 +7,15 @@ List sweetSayings = [
   "Warrior. Resilient. Unbreakable.",
 ];
 
+
 List<String> articleTitle = [
   "Unbreakable Women",
   "Empower. Inspire. Rise.",
   "Breaking Limits",
   "Fearless and Bold",
   "Strength in Her",
-  "Rise, Woman, Rise"
+  "Rise, Woman, Rise",
+
 ];
 
 List<String> imageSliders = [

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:title_proj/widgets/home_widgets/emergencies.dart/FireBrigadeEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies/AmbulanceEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies/ArmyEmergency.dart';
-import 'package:title_proj/widgets/home_widgets/emergencies/FireBrigadeEmergency.dart';
 import 'package:title_proj/widgets/home_widgets/emergencies/policeemergency.dart';
-
 
 class Emergency extends StatelessWidget {
   const Emergency({Key? key}) : super(key: key);
@@ -19,7 +18,7 @@ class Emergency extends StatelessWidget {
         children: [
           PoliceEmergency(),
           AmbulanceEmergency(),
-          FirebrigadeEmergency(),
+          FireBrigadeEmergency(), // Fixed naming
           ArmyEmergency(),
         ],
       ),
