@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_direct_caller_plugin/flutter_direct_caller_plugin.dart';
 
-class FirebrigadeEmergency extends StatelessWidget {
-  const FirebrigadeEmergency({Key? key}) : super(key: key);
+class FireBrigadeEmergency extends StatelessWidget {
+  const FireBrigadeEmergency({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class FirebrigadeEmergency extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Container(
-            height: 160, // Adjusted height
+            height: 160, // Same as PoliceEmergency
             width: MediaQuery.of(context).size.width * 0.7,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
