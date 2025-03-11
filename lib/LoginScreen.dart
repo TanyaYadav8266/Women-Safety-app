@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:title_proj/components/PrimaryButton.dart';
 import 'package:title_proj/components/SecondaryButton.dart';
 import 'package:title_proj/components/custom_textfield.dart';
+import 'package:title_proj/register_child.dart';
 import 'package:title_proj/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -22,7 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30),
               child: Form(
                 key: _formKey, // Attach form key
                 child: Column(
@@ -119,9 +121,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Register New User
                     SecondaryButton(
-                      title: 'Register New User',
-                      onPressed: () {},
-                    ),
+                        title: 'Register New User',
+                        onPressed: () {
+                          goTo(context, RegisterChildScreen());
+                        }),
                   ],
                 ),
               ),
