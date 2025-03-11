@@ -16,67 +16,68 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final bool readOnly;
 
-  CustomTextField(
-      {this.controller,
-      this.check,
-      this.enable = true,
-      this.readOnly = false,
-      this.focusNode,
-      this.hintText,
-      this.isPassword = false,
-      this.keyboardtype,
-      this.maxLines,
-      this.onsave,
-      this.prefix,
-      this.suffix,
-      this.textInputAction,
-      this.validate});
+  CustomTextField({
+    this.controller,
+    this.check,
+    this.enable = true,
+    this.readOnly = false,
+    this.focusNode,
+    this.hintText,
+    this.isPassword = false, // This controls obscureText
+    this.keyboardtype,
+    this.maxLines,
+    this.onsave,
+    this.prefix,
+    this.suffix,
+    this.textInputAction,
+    this.validate,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      enabled: enable==true? true:enable,
-      maxLines: maxLines == null ? 1 : maxLines,
+      enabled: enable,
+      maxLines: maxLines ?? 1,
       onSaved: onsave,
       readOnly: readOnly,
       focusNode: focusNode,
       textInputAction: textInputAction,
-      keyboardType: keyboardtype == null ? TextInputType.name : keyboardtype,
+      keyboardType: keyboardtype ?? TextInputType.name,
       controller: controller,
       validator: validate,
-      obscureText: isPassword == false ? false : isPassword,
+      obscureText: isPassword, // This replaces obscureText
       decoration: InputDecoration(
         prefixIcon: prefix,
         suffixIcon: suffix,
-        labelText: hintText ?? "hint text..",
+        labelText: hintText ?? "Hint text...",
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              style: BorderStyle.solid,
-              color: Theme.of(context).primaryColor,
-              ),
-              ),
-      enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              style: BorderStyle.solid,
-                color: Color(0xFF909A9E),
-              ),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              style: BorderStyle.solid,
-                color: Theme.of(context).primaryColor,
-              ),
-      )  , 
-      errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(
-              style: BorderStyle.solid,
-                color: Colors.red,
-              ),
-      )  ,
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            style: BorderStyle.solid,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            style: BorderStyle.solid,
+            color: Color(0xFF909A9E),
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            style: BorderStyle.solid,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(
+            style: BorderStyle.solid,
+            color: Colors.red,
+          ),
+        ),
       ),
     );
   }
