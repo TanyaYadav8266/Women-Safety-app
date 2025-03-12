@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\Users\\HIMANSHU\\Women-Safety-app\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\HIMANSHU\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\HIMANSHU\\final_project\\Women-Safety-app\\android\\app\\.cxx\\Debug\\6p4g1l31\\x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\HIMANSHU\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\HIMANSHU\\final_project\\Women-Safety-app\\android\\app\\.cxx\\Debug\\6p4g1l31\\x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
