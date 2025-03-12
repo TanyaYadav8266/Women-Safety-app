@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:title_proj/components/PrimaryButton.dart';
 import 'package:title_proj/components/SecondaryButton.dart';
 import 'package:title_proj/components/custom_textfield.dart';
-import 'package:title_proj/register_child.dart';
+import 'package:title_proj/child/register_child.dart';
+import 'package:title_proj/parent/parent_register_screen.dart';
 import 'package:title_proj/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -124,6 +125,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         title: 'Register New User',
                         onPressed: () {
                           goTo(context, RegisterChildScreen());
+                        }),
+                        SecondaryButton(
+                        title: 'Register As Guardian',
+                        onPressed: () {
+                          goTo(context, parent_register_screen());
                         }),
                   ],
                 ),
