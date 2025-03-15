@@ -93,13 +93,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     PrimaryButton(
                       title: 'LOGIN',
                       onPressed: () {
-                        if (_formKey.currentState!.validate()) {
+                        progressIndicator(context);
+                       // if (_formKey.currentState!.validate()) {
                           // If form is valid, proceed
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Logging in...')),
-                          );
+                         // ScaffoldMessenger.of(context).showSnackBar(
+                           // SnackBar(content: Text('Logging in...')),
+                          //);
                           // Call login function here
-                        }
+                       // }
                       },
                     ),
                     SizedBox(height: 20),
@@ -124,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SecondaryButton(
                         title: 'Register New User',
                         onPressed: () {
-                          goTo(context, RegisterChildScreen());
+                          goTo(context, register_child());
                         }),
                         SecondaryButton(
                         title: 'Register As Guardian',

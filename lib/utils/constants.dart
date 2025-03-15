@@ -9,3 +9,14 @@ void goTo(BuildContext context, Widget nextScreen) {
       ));
 }
  
+progressIndicator(BuildContext context){
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) => Center(
+      child: CircularProgressIndicator(
+      backgroundColor: primaryColor ,
+      strokeWidth: 7,
+      
+    )));
+}

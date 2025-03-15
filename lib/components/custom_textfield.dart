@@ -6,8 +6,9 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final bool isPassword;
   final TextEditingController? controller;
-  final TextInputType? keyboardType; // ✅ ADD THIS
+  final TextInputType? keyboardType;
   final String? Function(String?)? validator;
+  final Function(String?)? onSaved; // ✅ Added this
 
   const CustomTextField({
     Key? key,
@@ -16,8 +17,9 @@ class CustomTextField extends StatelessWidget {
     this.suffix,
     this.isPassword = false,
     this.controller,
-    this.keyboardType, // ✅ ADD THIS
+    this.keyboardType,
     this.validator,
+    this.onSaved, // ✅ Added this
   }) : super(key: key);
 
   @override
@@ -25,7 +27,7 @@ class CustomTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
-      keyboardType: keyboardType, // ✅ ADD THIS
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefix,
@@ -35,6 +37,7 @@ class CustomTextField extends StatelessWidget {
         ),
       ),
       validator: validator,
+      onSaved: onSaved, // ✅ Added this
     );
   }
 }

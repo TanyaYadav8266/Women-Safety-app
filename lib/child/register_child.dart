@@ -1,43 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:title_proj/child/LoginScreen.dart';
 import 'package:title_proj/components/PrimaryButton.dart';
-import 'package:title_proj/components/SecondaryButton.dart';
 import 'package:title_proj/components/custom_textfield.dart';
 import 'package:title_proj/utils/constants.dart';
+import 'package:title_proj/model/user_model.dart';
 
-class RegisterChildScreen extends StatefulWidget {
-  const RegisterChildScreen({super.key});
+class register_child extends StatefulWidget {
+  const register_child({super.key});
 
   @override
-  State<RegisterChildScreen> createState() => _RegisterChildScreenState();
+  State<register_child> createState() => _RegisterChildScreenState();
 }
 
-class _RegisterChildScreenState extends State<RegisterChildScreen> {
+class _RegisterChildScreenState extends State<register_child> {
   final _formKey = GlobalKey<FormState>();
-  bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
-  String? gender;
-  DateTime? selectedDate;
 
+  // Controllers for input fields
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  TextEditingController guardianEmailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
-  // Date Picker
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
+  bool isPasswordVisible = false;
+  bool isConfirmPasswordVisible = false;
+  bool isLoading = false; // To show progress indicator
 
-    if (picked != null && picked != selectedDate) {
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
+
+  // Function to handle form submission
+  void _onSubmit() async {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        selectedDate = picked;
+        isLoading = true;
       });
+
+      try {
+        // Create user in Firebase Authentication
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // Create a user model instance
+        UserModel user = UserModel(
+          id: userCredential.user!.uid,
+          name: nameController.text.trim(),
+          phone: phoneController.text.trim(),
+          childEmail: emailController.text.trim(),
+          guardianEmail: guardianEmailController.text.trim(),
+          type: "child",  // Default user type as "child"
+          profilePic: "",
+        );
+
+        // Store user details in Firestore Database
+        await _firestore.collection('users').doc(user.id).set(user.toJson());
+
+        // Navigate to login screen after successful registration
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+
+      } on FirebaseAuthException catch (e) {
+        _showErrorDialog(e.message ?? "Registration failed!");
+      } catch (e) {
+        _showErrorDialog("Something went wrong. Please try again!");
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
+  }
+
+  // Show error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -53,7 +108,7 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Register Heading
+                    // Heading
                     Text(
                       "REGISTER AS CHILD",
                       style: TextStyle(
@@ -72,7 +127,7 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                     ),
                     SizedBox(height: 20),
 
-                    // Name Field
+                    // Full Name Field
                     CustomTextField(
                       controller: nameController,
                       hintText: 'Enter Full Name',
@@ -121,57 +176,21 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                     ),
                     SizedBox(height: 15),
 
-                    // Gender Dropdown
-                    DropdownButtonFormField<String>(
-                      value: gender,
-                      hint: Text("Select Gender"),
-                      items: ['Male', 'Female', 'Other']
-                          .map((label) => DropdownMenuItem(
-                                child: Text(label),
-                                value: label,
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          gender = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                      ),
+                    // Guardian Email Field
+                    CustomTextField(
+                      controller: guardianEmailController,
+                      hintText: 'Enter Guardian Email',
+                      prefix: Icon(Icons.email, color: Colors.grey),
                       validator: (value) {
-                        if (value == null) {
-                          return 'Please select a gender';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter guardian email';
+                        } else if (!RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                            .hasMatch(value)) {
+                          return 'Enter a valid guardian email address';
                         }
                         return null;
                       },
-                    ),
-                    SizedBox(height: 15),
-
-                    // Date of Birth Picker
-                    GestureDetector(
-                      onTap: () => _selectDate(context),
-                      child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: Text(
-                          selectedDate == null
-                              ? "Select Date of Birth"
-                              : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-                          style: TextStyle(fontSize: 16, color: Colors.black87),
-                        ),
-                      ),
                     ),
                     SizedBox(height: 15),
 
@@ -236,33 +255,14 @@ class _RegisterChildScreenState extends State<RegisterChildScreen> {
                     ),
                     SizedBox(height: 20),
 
-                    // Register Button
-                    PrimaryButton(
-                      title: 'REGISTER',
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle Registration Logic Here
-                        }
-                      },
-                    ),
+                    // Register Button with progress indicator
+                    isLoading
+                        ? CircularProgressIndicator()
+                        : PrimaryButton(
+                            title: 'REGISTER',
+                            onPressed: _onSubmit,
+                          ),
                     SizedBox(height: 20),
-
-                    // Already have an account? Login
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SecondaryButton(
-                          title: 'Login',
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
