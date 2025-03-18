@@ -7,14 +7,14 @@ import 'package:title_proj/components/custom_textfield.dart';
 import 'package:title_proj/utils/constants.dart';
 import 'package:title_proj/model/user_model.dart';
 
-class register_child extends StatefulWidget {
-  const register_child({super.key});
+class RegisterChildScreen extends StatefulWidget {
+  const RegisterChildScreen({super.key});
 
   @override
-  State<register_child> createState() => _RegisterChildScreenState();
+  State<RegisterChildScreen> createState() => _RegisterChildScreenState();
 }
 
-class _RegisterChildScreenState extends State<register_child> {
+class _RegisterChildScreenState extends State<RegisterChildScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers for input fields
@@ -98,6 +98,10 @@ class _RegisterChildScreenState extends State<register_child> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Child Registration"),
+        backgroundColor: primaryColor,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -108,25 +112,6 @@ class _RegisterChildScreenState extends State<register_child> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Heading
-                    Text(
-                      "REGISTER AS CHILD",
-                      style: TextStyle(
-                        fontSize: 32,
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 15),
-
-                    // Logo
-                    Image.asset(
-                      'assets/SHEildlogo.png',
-                      height: 150,
-                      width: 200,
-                    ),
-                    SizedBox(height: 20),
-
                     // Full Name Field
                     CustomTextField(
                       controller: nameController,
@@ -159,23 +144,6 @@ class _RegisterChildScreenState extends State<register_child> {
                     ),
                     SizedBox(height: 15),
 
-                    // Phone Number Field
-                    CustomTextField(
-                      controller: phoneController,
-                      hintText: 'Enter Phone Number',
-                      prefix: Icon(Icons.phone, color: Colors.grey),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        } else if (value.length != 10) {
-                          return 'Enter a valid 10-digit phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 15),
-
                     // Guardian Email Field
                     CustomTextField(
                       controller: guardianEmailController,
@@ -184,10 +152,6 @@ class _RegisterChildScreenState extends State<register_child> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter guardian email';
-                        } else if (!RegExp(
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-                            .hasMatch(value)) {
-                          return 'Enter a valid guardian email address';
                         }
                         return null;
                       },
@@ -200,55 +164,11 @@ class _RegisterChildScreenState extends State<register_child> {
                       hintText: 'Enter Password',
                       isPassword: !isPasswordVisible,
                       prefix: Icon(Icons.lock, color: Colors.grey),
-                      suffix: IconButton(
-                        icon: Icon(
-                          isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isPasswordVisible = !isPasswordVisible;
-                          });
-                        },
-                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a password';
                         } else if (value.length < 6) {
                           return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 15),
-
-                    // Confirm Password Field
-                    CustomTextField(
-                      controller: confirmPasswordController,
-                      hintText: 'Confirm Password',
-                      isPassword: !isConfirmPasswordVisible,
-                      prefix: Icon(Icons.lock, color: Colors.grey),
-                      suffix: IconButton(
-                        icon: Icon(
-                          isConfirmPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isConfirmPasswordVisible =
-                                !isConfirmPasswordVisible;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        } else if (value != passwordController.text) {
-                          return 'Passwords do not match';
                         }
                         return null;
                       },
@@ -262,7 +182,6 @@ class _RegisterChildScreenState extends State<register_child> {
                             title: 'REGISTER',
                             onPressed: _onSubmit,
                           ),
-                    SizedBox(height: 20),
                   ],
                 ),
               ),

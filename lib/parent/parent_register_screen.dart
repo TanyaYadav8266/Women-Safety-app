@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:title_proj/components/PrimaryButton.dart';
-import 'package:title_proj/components/SecondaryButton.dart';
 import 'package:title_proj/components/custom_textfield.dart';
 import 'package:title_proj/utils/constants.dart';
+import 'package:title_proj/model/user_model.dart';
 
-class parent_register_screen extends StatefulWidget {
-  const parent_register_screen({super.key});
+class ParentRegisterScreen extends StatefulWidget {
+  const ParentRegisterScreen({super.key});
 
   @override
-  State<parent_register_screen> createState() => _ParentRegisterScreenState();
+  State<ParentRegisterScreen> createState() => _ParentRegisterScreenState();
 }
 
-class _ParentRegisterScreenState extends State<parent_register_screen> {
+class _ParentRegisterScreenState extends State<ParentRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final Map<String, String> _formData = {};
 
-  bool isPasswordVisible = false;
-  bool isConfirmPasswordVisible = false;
-
+  // Controllers for input fields
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -25,197 +24,171 @@ class _ParentRegisterScreenState extends State<parent_register_screen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
-  // Submit function
-  void _onSubmit() {
+  bool isPasswordVisible = false;
+  bool isConfirmPasswordVisible = false;
+  bool isLoading = false; // To show progress indicator
+
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
+
+  // Function to handle form submission
+  void _onSubmit() async {
     if (_formKey.currentState!.validate()) {
-      progressIndicator(context);
-      _formKey.currentState!.save(); // Save the form data
-      print(_formData);
-      // Handle Registration Logic Here
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        // Create user in Firebase Authentication
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // Create a user model instance
+        UserModel user = UserModel(
+          id: userCredential.user!.uid,
+          name: nameController.text.trim(),
+          phone: phoneController.text.trim(),
+          childEmail: childEmailController.text.trim(),
+          guardianEmail: emailController.text.trim(),
+          type: "guardian",  // Default user type as "guardian"
+          profilePic: "",
+        );
+
+        // Store user details in Firestore Database
+        await _firestore.collection('users').doc(user.id).set(user.toJson());
+
+        // Navigate to login screen after successful registration
+        Navigator.pop(context);
+
+      } on FirebaseAuthException catch (e) {
+        _showErrorDialog(e.message ?? "Registration failed!");
+      } catch (e) {
+        _showErrorDialog("Something went wrong. Please try again!");
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
+  }
+
+  // Show error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Parent Registration"),
+        backgroundColor: primaryColor,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Heading
-                  Text(
-                    "REGISTER AS PARENT",
-                    style: TextStyle(
-                      fontSize: 32,
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Full Name Field
+                    CustomTextField(
+                      controller: nameController,
+                      hintText: 'Enter Full Name',
+                      prefix: Icon(Icons.person, color: Colors.grey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your full name';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  SizedBox(height: 15),
+                    SizedBox(height: 15),
 
-                  // Logo
-                  Image.asset(
-                    'assets/SHEildlogo.png',
-                    height: 150,
-                    width: 200,
-                  ),
-                  SizedBox(height: 20),
-
-                  // Name Field
-                  CustomTextField(
-                    controller: nameController,
-                    hintText: 'Enter Full Name',
-                    prefix: Icon(Icons.person, color: Colors.grey),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your full name';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _formData['name'] = value!;
-                    },
-                  ),
-                  SizedBox(height: 15),
-
-                  // Phone Number Field
-                  CustomTextField(
-                    controller: phoneController,
-                    hintText: 'Enter Phone Number',
-                    prefix: Icon(Icons.phone, color: Colors.grey),
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your phone number';
-                      } else if (value.length != 10) {
-                        return 'Enter a valid 10-digit phone number';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _formData['phone'] = value!;
-                    },
-                  ),
-                  SizedBox(height: 15),
-
-                  // Email Field
-                  CustomTextField(
-                    controller: emailController,
-                    hintText: 'Enter Email',
-                    prefix: Icon(Icons.email, color: Colors.grey),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      } else if (!RegExp(
-                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-                          .hasMatch(value)) {
-                        return 'Enter a valid email address';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _formData['email'] = value!;
-                    },
-                  ),
-                  SizedBox(height: 15),
-
-                  // Child Email Field
-                  CustomTextField(
-                    controller: childEmailController,
-                    hintText: 'Enter Child Email',
-                    prefix: Icon(Icons.child_care, color: Colors.grey),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter child email';
-                      } else if (!RegExp(
-                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-                          .hasMatch(value)) {
-                        return 'Enter a valid email address';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _formData['child_email'] = value!;
-                    },
-                  ),
-                  SizedBox(height: 15),
-
-                  // Password Field
-                  CustomTextField(
-                    controller: passwordController,
-                    hintText: 'Enter Password',
-                    isPassword: !isPasswordVisible,
-                    prefix: Icon(Icons.lock, color: Colors.grey),
-                    suffix: IconButton(
-                      icon: Icon(isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                      onPressed: () => setState(
-                          () => isPasswordVisible = !isPasswordVisible),
+                    // Phone Number Field
+                    CustomTextField(
+                      controller: phoneController,
+                      hintText: 'Enter Phone Number',
+                      prefix: Icon(Icons.phone, color: Colors.grey),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _formData['password'] = value!;
-                    },
-                  ),
-                  SizedBox(height: 15),
+                    SizedBox(height: 15),
 
-                  // Confirm Password Field
-                  CustomTextField(
-                    controller: confirmPasswordController,
-                    hintText: 'Retype Password',
-                    isPassword: !isConfirmPasswordVisible,
-                    prefix: Icon(Icons.lock, color: Colors.grey),
-                    suffix: IconButton(
-                      icon: Icon(isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                      onPressed: () => setState(() =>
-                          isConfirmPasswordVisible =
-                              !isConfirmPasswordVisible),
+                    // Email Field
+                    CustomTextField(
+                      controller: emailController,
+                      hintText: 'Enter Email',
+                      prefix: Icon(Icons.email, color: Colors.grey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      } else if (value != passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
+                    SizedBox(height: 15),
 
-                  // Register Button
-                  PrimaryButton(
-                    title: 'REGISTER',
-                    onPressed: _onSubmit,
-                  ),
-                  SizedBox(height: 20),
+                    // Child Email Field
+                    CustomTextField(
+                      controller: childEmailController,
+                      hintText: 'Enter Child Email',
+                      prefix: Icon(Icons.child_care, color: Colors.grey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter child email';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 15),
 
-                  // Already have an account? Login
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Already have an account? "),
-                      SecondaryButton(
-                        title: 'Login',
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                ],
+                    // Password Field
+                    CustomTextField(
+                      controller: passwordController,
+                      hintText: 'Enter Password',
+                      isPassword: !isPasswordVisible,
+                      prefix: Icon(Icons.lock, color: Colors.grey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+
+                    // Register Button with progress indicator
+                    isLoading
+                        ? CircularProgressIndicator()
+                        : PrimaryButton(
+                            title: 'REGISTER',
+                            onPressed: _onSubmit,
+                          ),
+                  ],
+                ),
               ),
             ),
           ),
