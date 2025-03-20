@@ -3,9 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:title_proj/components/PrimaryButton.dart';
 import 'package:title_proj/components/SecondaryButton.dart';
 import 'package:title_proj/components/custom_textfield.dart';
-import 'package:title_proj/home_screen.dart';
+import 'package:title_proj/child/bottom_screens/child_home_page.dart';
 import 'package:title_proj/parent/parent_homescreen.dart';
 import 'package:title_proj/utils/constants.dart';
+import 'package:title_proj/utils/shared_preferences.dart';  // Import SharedPreferencesUtil
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -38,8 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
       // Assuming role differentiation is stored in Firestore or Firebase user metadata
       User? user = userCredential.user;
       if (user != null) {
-        // Implement logic to check user role from Firestore or user metadata
-        if (user.email!.contains("child")) {
+        // Save the login state and role to SharedPreferences
+        String role = user.email!.contains("child") ? "child" : "parent";
+        await SharedPreferencesUtil.saveLoginState(role);  // Save the role in SharedPreferences
+
+        // Navigate based on the role
+        if (role == "child") {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -57,6 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text("Login failed: ${e.toString()}")),
       );
     }
+  }
+
+  // Logout function to clear the login state and role
+  Future<void> _logout() async {
+    await SharedPreferencesUtil.logout();  // Clear login state and role
+    Navigator.pushReplacementNamed(context, '/');  // Navigate back to the login screen
   }
 
   @override
