@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:title_proj/child/LoginScreen.dart';
 import 'package:title_proj/child/bottom_page.dart';
-import 'package:title_proj/child/register_child.dart'; // Import child register screen
-import 'package:title_proj/parent/parent_register_screen.dart'; // Import parent register screen
+import 'package:title_proj/child/register_child.dart'; 
+import 'package:title_proj/parent/parent_register_screen.dart'; 
 import 'firebase_options.dart';
 
 void main() async {
@@ -31,9 +31,9 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',  
       routes: {
-        '/': (context) => BottomPage(), // Default login screen
-        '/register_child': (context) => RegisterChildScreen(), // Child register screen
-        '/parent_register': (context) => ParentRegisterScreen(), // Parent register screen
+        '/': (context) => BottomPage(), // Default screen
+        '/register_child': (context) => RegisterChildScreen(), 
+        '/parent_register': (context) => ParentRegisterScreen(),
       },
     );
   }

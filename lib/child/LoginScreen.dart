@@ -65,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Logout function to clear the login state and role
+  // ignore: unused_element
   Future<void> _logout() async {
     await SharedPreferencesUtil.logout();  // Clear login state and role
     Navigator.pushReplacementNamed(context, '/');  // Navigate back to the login screen

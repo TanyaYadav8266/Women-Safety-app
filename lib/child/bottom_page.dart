@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:title_proj/child/bottom_screens/add_contacts.dart';
 import 'package:title_proj/child/bottom_screens/chat_page.dart';
 import 'package:title_proj/child/bottom_screens/child_home_page.dart';
 import 'package:title_proj/child/bottom_screens/contacts_page.dart';
@@ -13,51 +14,58 @@ class BottomPage extends StatefulWidget {
 }
 
 class _BottomPageState extends State<BottomPage> {
-  // List of pages for the navigation
-  List<Widget> pages = [
+  // List of pages for navigation
+  final List<Widget> pages = [
     HomeScreen(),
-    ContactsPage(),
+    AddContactsPage(),
     ChatPage(),
     ProfilePage(),
     ReviewPage(),
   ];
 
-  // Current selected index for the navigation
+  // Current selected index
   int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: pages[_currentIndex], // Display the page based on the selected index
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex, // Set the current selected index
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index; // Update the selected index when the user taps an item
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Home',
-            icon: Icon(Icons.home),
-          ),
-          BottomNavigationBarItem(
-            label: 'Contacts',
-            icon: Icon(Icons.contacts),
-          ),
-          BottomNavigationBarItem(
-            label: 'Chats',
-            icon: Icon(Icons.chat),
-          ),
-          BottomNavigationBarItem(
-            label: 'Profile',
-            icon: Icon(Icons.account_circle),
-          ),
-          BottomNavigationBarItem(
-            label: 'Reviews',
-            icon: Icon(Icons.rate_review),
-          ),
-        ],
+      body: SafeArea(child: pages[_currentIndex]), // Prevents UI from being hidden
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed, // Fixes shifting issue
+          currentIndex: _currentIndex,
+          selectedItemColor: Colors.deepPurple,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              label: 'Home',
+              icon: Icon(Icons.home),
+            ),
+            BottomNavigationBarItem(
+              label: 'Contacts',
+              icon: Icon(Icons.contacts),
+            ),
+            BottomNavigationBarItem(
+              label: 'Chats',
+              icon: Icon(Icons.chat),
+            ),
+            BottomNavigationBarItem(
+              label: 'Profile',
+              icon: Icon(Icons.account_circle),
+            ),
+            BottomNavigationBarItem(
+              label: 'Reviews',
+              icon: Icon(Icons.rate_review),
+            ),
+          ],
+        ),
       ),
     );
   }
