@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:title_proj/child/bottom_screens/guardian_child_page.dart';
+  // Correct import for GuardianChildrenPage
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -9,12 +11,12 @@ class ChatPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Select Guardian"),
-        backgroundColor: Colors.pink,  // You can adjust the color to fit your theme
+        backgroundColor: Colors.pink,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .where('type', isEqualTo: 'guardian')  // Query to fetch users with 'guardian' type
+            .where('type', isEqualTo: 'guardian')  // Fetch guardians from Firestore
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -23,27 +25,27 @@ class ChatPage extends StatelessWidget {
 
           final guardians = snapshot.data!.docs;
 
-          // Debug: Print number of guardians
-          print('Found ${guardians.length} guardians');
-
           return ListView.builder(
             itemCount: guardians.length,
             itemBuilder: (context, index) {
               final guardian = guardians[index];
-              final guardianName = guardian['name'];  // Assuming 'name' is the field for the guardian's name
-
-              // Debug: Print each guardian's name
-              print('Guardian: $guardianName');
+              final guardianName = guardian['name'];
+              final guardianEmail = guardian['guardiantEmail'];  // Corrected field name
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Card(
-                  color: Colors.pink[100],  // Guardian card color
+                  color: Colors.pink[100],
                   child: ListTile(
                     title: Text(guardianName),
                     onTap: () {
-                      // Handle guardian selection, you can pass guardian data to the next page
-                      print('Selected Guardian: $guardianName');
+                      // Pass the guardian's email to the next page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GuardianChildrenPage(guardianEmail: guardianEmail),
+                        ),
+                      );
                     },
                   ),
                 ),
