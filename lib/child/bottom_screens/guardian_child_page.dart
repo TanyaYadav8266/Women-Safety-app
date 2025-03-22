@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'messages.dart';  // Import MessagesPage instead of ChatPage
 
 class GuardianChildrenPage extends StatelessWidget {
   final String guardianEmail;
@@ -8,8 +9,6 @@ class GuardianChildrenPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Guardian email passed: $guardianEmail');  // Debugging print to check the email passed
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Children of Guardian"),
@@ -17,9 +16,9 @@ class GuardianChildrenPage extends StatelessWidget {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('users')  // Query from 'users' collection
-            .where('guardiantEmail', isEqualTo: guardianEmail)  // Filter children by guardian's email
-            .where('type', isEqualTo: 'child')  // Only fetch documents with type 'child'
+            .collection('users')
+            .where('guardiantEmail', isEqualTo: guardianEmail)
+            .where('type', isEqualTo: 'child')  // Only fetch children documents
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -36,7 +35,8 @@ class GuardianChildrenPage extends StatelessWidget {
             itemCount: children.length,
             itemBuilder: (context, index) {
               final child = children[index];
-              final childName = child['name'];  // Get the child's name
+              final childName = child['name'];
+              final childEmail = child['childEmail'];  // Assuming childEmail is stored in the child document
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -45,7 +45,16 @@ class GuardianChildrenPage extends StatelessWidget {
                   child: ListTile(
                     title: Text(childName),
                     onTap: () {
-                      print('Selected Child: $childName');
+                      // Navigate to the messages page (chat) when the child is selected
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MessagesPage(  // Navigate to MessagesPage
+                            parentEmail: guardianEmail,  // Pass the guardian's email
+                            childEmail: childEmail,      // Pass the child's email
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),
