@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:title_proj/child/bottom_screens/guardian_child_page.dart';
-  // Correct import for GuardianChildrenPage
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -16,11 +15,24 @@ class ChatPage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .where('type', isEqualTo: 'guardian')  // Fetch guardians from Firestore
+            .where('type', isEqualTo: 'guardian') // Fetch guardians from Firestore
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: Colors.pink,
+                strokeWidth: 2.0, // Adjust thickness for UI
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No guardians found'));
           }
 
           final guardians = snapshot.data!.docs;
@@ -30,7 +42,7 @@ class ChatPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final guardian = guardians[index];
               final guardianName = guardian['name'];
-              final guardianEmail = guardian['guardiantEmail'];  // Corrected field name
+              final guardianEmail = guardian['guardiantEmail']; // Corrected field name
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),

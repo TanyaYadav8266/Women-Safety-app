@@ -1,176 +1,223 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:title_proj/components/PrimaryButton.dart';
+import 'package:title_proj/components/custom_textfield.dart';
+
+const Color kColorDarkRed = Colors.redAccent; // Define missing color
 
 class ReviewPage extends StatefulWidget {
   @override
-  _ReviewPageState createState() => _ReviewPageState();
+  State<ReviewPage> createState() => _ReviewPageState();
 }
 
 class _ReviewPageState extends State<ReviewPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController _placeController = TextEditingController();
-  final TextEditingController _reviewController = TextEditingController();
-  int _rating = 0; // Rating will be between 1 to 5
-  String _place = ''; // The selected or entered place
+  TextEditingController locationC = TextEditingController();
+  TextEditingController viewsC = TextEditingController();
+  TextEditingController searchController = TextEditingController(); // Search controller
+  bool isSaving = false;
+  double? ratings;
+  String searchQuery = ''; // Variable to store search query
 
-  // Function to submit review
-  void _submitReview() {
-    if (_place.isNotEmpty && _rating > 0) {
-      _firestore.collection('reviews').add({
-        'place': _place,
-        'rating': _rating,
-        'review': _reviewController.text,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      _placeController.clear();
-      _reviewController.clear();
-      setState(() {
-        _rating = 0; // Reset rating
-      });
-    }
+  showAlert(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.all(2.0),
+            title: Text("Review your place"),
+            content: Form(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomTextField(
+                    hintText: 'Enter location',
+                    controller: locationC,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomTextField(
+                    controller: viewsC,
+                    hintText: 'Enter your views',
+                    maxLines: 3,
+                  ),
+                ),
+                const SizedBox(height: 15),
+                RatingBar.builder(
+                  initialRating: 1,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  itemCount: 5,
+                  unratedColor: Colors.grey.shade300,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) =>
+                      const Icon(Icons.star, color: kColorDarkRed),
+                  onRatingUpdate: (rating) {
+                    setState(() {
+                      ratings = rating;
+                    });
+                  },
+                ),
+              ],
+            )),
+            actions: [
+              PrimaryButton(
+                  title: "SAVE",
+                  onPressed: () {
+                    saveReview();
+                    Navigator.pop(context);
+                  }),
+              TextButton(
+                  child: Text("Cancel"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+            ],
+          );
+        });
   }
 
-  // Function to display reviews for a specific place
-  Stream<List<Map<String, dynamic>>> _getReviews(String place) {
-    return _firestore
-        .collection('reviews')
-        .where('place', isEqualTo: place)
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => {
-                  'place': doc['place'],
-                  'rating': doc['rating'],
-                  'review': doc['review'],
-                  'timestamp': doc['timestamp'],
-                })
-            .toList());
+  saveReview() async {
+    setState(() {
+      isSaving = true;
+    });
+    await FirebaseFirestore.instance.collection('reviews').add({
+      'location': locationC.text.isNotEmpty ? locationC.text : "Unknown",
+      'views': viewsC.text.isNotEmpty ? viewsC.text : "No comments",
+      "ratings": ratings ?? 1.0, // Default to 1.0 if null
+    }).then((value) {
+      setState(() {
+        isSaving = false;
+        Fluttertoast.showToast(msg: 'Review uploaded successfully');
+      });
+    });
+  }
+
+  // Method to update the search query and filter results
+  void updateSearchQuery(String query) {
+    setState(() {
+      searchQuery = query.toLowerCase();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Safety Review"),
-        backgroundColor: Colors.pink,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Place input field (text or dropdown)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _placeController,
-                decoration: InputDecoration(
-                  labelText: 'Enter or Select a Place',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _place = value;
-                  });
-                },
-              ),
-            ),
-            // Rating system (1 to 5 stars)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: List.generate(5, (index) {
-                  return IconButton(
-                    icon: Icon(
-                      index < _rating ? Icons.star : Icons.star_border,
-                      color: Colors.amber,
+      body: isSaving
+          ? Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Recent Reviews by Others",
+                      style: TextStyle(fontSize: 25, color: Colors.black),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _rating = index + 1;
-                      });
-                    },
-                  );
-                }),
-              ),
-            ),
-            // Review TextField
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _reviewController,
-                decoration: InputDecoration(
-                  labelText: 'Leave a Review',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-            ),
-            // Submit Button
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: _submitReview,
-                child: Text("Submit Review"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink, // Button color
-                ),
-              ),
-            ),
-            // Display Reviews for the place
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Reviews for $_place',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _getReviews(_place),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text("No reviews yet"));
-                }
-
-                final reviews = snapshot.data!;
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    final review = reviews[index];
-                    return Card(
-                      margin: EdgeInsets.all(8.0),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Rating: ${review['rating']} ⭐',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              review['review'] ?? 'No review',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Posted on: ${review['timestamp'].toDate().toString()}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: updateSearchQuery, // Update search query as user types
+                      decoration: InputDecoration(
+                        hintText: 'Search location...',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  ),
+                  Expanded(
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('reviews')
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+
+                        // Filter reviews based on search query
+                        var filteredDocs = snapshot.data!.docs.where((doc) {
+                          var data = doc.data() as Map<String, dynamic>?;
+                          var location = data?["location"] ?? "Unknown";
+                          return location.toLowerCase().contains(searchQuery); // Filter based on location
+                        }).toList();
+
+                        return ListView.separated(
+                          separatorBuilder: (context, index) => Divider(),
+                          itemCount: filteredDocs.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final doc = filteredDocs[index];
+                            final data = doc.data() as Map<String, dynamic>? ?? {};
+
+                            // ✅ Check if fields exist, otherwise use default values
+                            String location = data["location"] ?? "Unknown";
+                            String views = data["views"] ?? "No comments";
+                            double rating = (data["ratings"] as num?)?.toDouble() ?? 1.0;
+
+                            return Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Card(
+                                elevation: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Location: $location",
+                                        style: TextStyle(
+                                            fontSize: 18, color: Colors.black),
+                                      ),
+                                      Text(
+                                        "Comments: $views",
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                      ),
+                                      RatingBar.builder(
+                                        initialRating: rating,
+                                        minRating: 1,
+                                        direction: Axis.horizontal,
+                                        itemCount: 5,
+                                        ignoreGestures: true,
+                                        unratedColor: Colors.grey.shade300,
+                                        itemPadding: const EdgeInsets.symmetric(
+                                            horizontal: 4.0),
+                                        itemBuilder: (context, _) => const Icon(
+                                            Icons.star,
+                                            color: kColorDarkRed),
+                                        onRatingUpdate: (rating) {
+                                          setState(() {
+                                            ratings = rating;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.pink,
+        onPressed: () {
+          showAlert(context);
+        },
+        child: Icon(Icons.add),
       ),
     );
   }

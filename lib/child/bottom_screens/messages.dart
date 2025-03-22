@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';  // For picking photos from gallery
-import 'package:location/location.dart';  // For getting location
+import 'package:image_picker/image_picker.dart';
+import 'package:location/location.dart';
+import 'dart:io';
 
 class MessagesPage extends StatefulWidget {
-  final String parentEmail;  // The parent's email
-  final String childEmail;   // The child's email
+  final String parentEmail;
+  final String childEmail;
 
   const MessagesPage({super.key, required this.parentEmail, required this.childEmail});
 
@@ -19,40 +20,54 @@ class _MessagesPageState extends State<MessagesPage> {
   final ImagePicker _picker = ImagePicker();
   Location _location = Location();
 
-  // Function to send message
-  void _sendMessage(String message) {
+  // Send message from child to parent
+  void _sendMessage(String message) async {
     if (message.isNotEmpty) {
-      _firestore.collection('messages').add({
-        'sender': widget.parentEmail,  // Parent sends the message
-        'receiver': widget.childEmail,  // Receiver is the child
-        'message': message,
-        'timestamp': FieldValue.serverTimestamp(),  // Timestamp of the message
-      });
-
-      _controller.clear();  // Clear the text field after sending the message
+      try {
+        await _firestore.collection('messages').add({
+          'sender': widget.childEmail,
+          'receiver': widget.parentEmail,
+          'message': message,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        _controller.clear();  // Clear text field after sending
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message')));
+      }
     }
   }
 
-  // Function to get location
+  // Share location with parent
   Future<void> _shareLocation() async {
-    // Request permission and get the current location
-    var locationData = await _location.getLocation();
-    _sendMessage('Location: Lat: ${locationData.latitude}, Lon: ${locationData.longitude}');
-  }
-
-  // Function to pick image from gallery
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      _sendMessage('Image: ${pickedFile.path}');  // You can send the image URL or path to Firestore
+    try {
+      var locationData = await _location.getLocation();
+      _sendMessage('Location: Lat: ${locationData.latitude}, Lon: ${locationData.longitude}');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to get location')));
     }
   }
 
-  // Function to capture photo
+  // Pick image from gallery
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        _sendMessage('Image: ${pickedFile.path}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick image')));
+    }
+  }
+
+  // Capture image from camera
   Future<void> _captureImage() async {
-    final XFile? capturedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (capturedFile != null) {
-      _sendMessage('Image: ${capturedFile.path}');
+    try {
+      final XFile? capturedFile = await _picker.pickImage(source: ImageSource.camera);
+      if (capturedFile != null) {
+        _sendMessage('Image: ${capturedFile.path}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to capture image')));
     }
   }
 
@@ -60,7 +75,7 @@ class _MessagesPageState extends State<MessagesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Chat with ${widget.childEmail}"),
+        title: Text("Chat with ${widget.parentEmail}"),
         backgroundColor: Colors.pink,
       ),
       body: Column(
@@ -69,13 +84,21 @@ class _MessagesPageState extends State<MessagesPage> {
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection('messages')
-                  .where('sender', isEqualTo: widget.parentEmail)
-                  .where('receiver', isEqualTo: widget.childEmail)
-                  .orderBy('timestamp')  // Order by timestamp
+                  .where('sender', isEqualTo: widget.childEmail)
+                  .where('receiver', isEqualTo: widget.parentEmail)
+                  .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No messages yet'));
                 }
 
                 final messages = snapshot.data!.docs;
@@ -83,15 +106,38 @@ class _MessagesPageState extends State<MessagesPage> {
                 for (var message in messages) {
                   final messageText = message['message'];
                   final messageSender = message['sender'];
-                  messageWidgets.add(
-                    ListTile(
-                      title: Text(messageText),
-                      subtitle: Text(messageSender),
-                    ),
-                  );
+
+                  // Check if the message is an image
+                  if (messageText.startsWith('Image:')) {
+                    final imagePath = messageText.replaceFirst('Image:', '').trim();
+                    if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
+                      messageWidgets.add(
+                        ListTile(
+                          title: Image.network(imagePath),
+                          subtitle: Text(messageSender),
+                        ),
+                      );
+                    } else {
+                      messageWidgets.add(
+                        ListTile(
+                          title: Image.file(File(imagePath)),
+                          subtitle: Text(messageSender),
+                        ),
+                      );
+                    }
+                  } else {
+                    messageWidgets.add(
+                      ListTile(
+                        title: Text(messageText),
+                        subtitle: Text(messageSender),
+                      ),
+                    );
+                  }
                 }
+
                 return ListView(
-                  children: messageWidgets,  // Display messages here
+                  reverse: true, // Show the latest message at the bottom
+                  children: messageWidgets,
                 );
               },
             ),
@@ -100,22 +146,18 @@ class _MessagesPageState extends State<MessagesPage> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                // Location Icon Button
                 IconButton(
                   icon: Icon(Icons.location_on),
-                  onPressed: _shareLocation,  // Share the current location
+                  onPressed: _shareLocation,
                 ),
-                // Camera Icon Button (for capturing photos)
                 IconButton(
                   icon: Icon(Icons.camera_alt),
-                  onPressed: _captureImage,  // Capture an image using the camera
+                  onPressed: _captureImage,
                 ),
-                // Photo Gallery Icon Button (for selecting photos)
                 IconButton(
                   icon: Icon(Icons.photo_library),
-                  onPressed: _pickImage,  // Pick an image from the gallery
+                  onPressed: _pickImage,
                 ),
-                // Text Field to type the message
                 Expanded(
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 8),
@@ -132,11 +174,10 @@ class _MessagesPageState extends State<MessagesPage> {
                     ),
                   ),
                 ),
-                // IconButton for sending the message
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () {
-                    _sendMessage(_controller.text);  // Send the typed message
+                    _sendMessage(_controller.text);
                   },
                 ),
               ],

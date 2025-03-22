@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final Function(String?)? onSaved; // ✅ Added this
+  final int? maxLines;  // Added this
 
   const CustomTextField({
     Key? key,
@@ -20,6 +21,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.validator,
     this.onSaved, // ✅ Added this
+    this.maxLines,  // Added this
   }) : super(key: key);
 
   @override
@@ -38,6 +40,7 @@ class CustomTextField extends StatelessWidget {
       ),
       validator: validator,
       onSaved: onSaved, // ✅ Added this
+      maxLines: maxLines,  // Pass maxLines to TextFormField
     );
   }
 }
