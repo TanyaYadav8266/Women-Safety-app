@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_sms/flutter_sms.dart';
+import 'package:twilio_flutter/twilio_flutter.dart'; // Import Twilio package
 import 'package:title_proj/components/PrimaryButton.dart';
 
 class SafeHome extends StatefulWidget {
@@ -14,6 +14,21 @@ class _SafeHomeState extends State<SafeHome> {
   Position? _currentPosition;
   LocationPermission? permission;
 
+  // Initialize TwilioFlutter with your credentials
+  late TwilioFlutter twilioFlutter;  // Use 'late' to tell Dart the variable will be initialized later
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize Twilio with your Twilio credentials
+    twilioFlutter = TwilioFlutter(
+      accountSid: 'your_account_sid',  // Replace with your Account SID from Twilio
+      authToken: 'your_auth_token',    // Replace with your Auth Token from Twilio
+      twilioNumber: 'your_twilio_number', // Replace with your Twilio phone number
+    );
+  }
+
   // Request permissions
   _getPermission() async {
     await [Permission.sms, Permission.location].request();
@@ -22,19 +37,16 @@ class _SafeHomeState extends State<SafeHome> {
   // Check if the SMS permission is granted
   _isPermissionGranted() async => await Permission.sms.status.isGranted;
 
-  // Send SMS using flutter_sms
+  // Send SMS using Twilio
   _sendSms(String phoneNumber, String message) async {
-    String result = await sendSMS(
-      message: message,
-      recipients: [phoneNumber],
-    ).catchError((error) {
+    try {
+      final messageSent = await twilioFlutter.sendSMS(
+        toNumber: phoneNumber,  // The recipient's phone number
+        messageBody: message,   // The message to send
+      );
+      Fluttertoast.showToast(msg: "Message sent: $messageSent");
+    } catch (error) {
       Fluttertoast.showToast(msg: "Message failed: $error");
-    });
-
-    if (result.isEmpty) {
-      Fluttertoast.showToast(msg: "Message sent!");
-    } else {
-      Fluttertoast.showToast(msg: "Message failed: $result");
     }
   }
 
@@ -97,7 +109,7 @@ class _SafeHomeState extends State<SafeHome> {
                     if (_currentPosition != null) {
                       String message =
                           "Emergency! My location is: Lat: ${_currentPosition?.latitude}, Long: ${_currentPosition?.longitude}";
-                      _sendSms("8448018504", message);
+                      _sendSms("8448018504", message);  // Replace with the recipient's phone number
                     } else {
                       Fluttertoast.showToast(msg: "Location not available yet");
                     }
