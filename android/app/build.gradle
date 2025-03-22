@@ -2,15 +2,17 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin" // Flutter plugin
-    id 'com.google.gms.google-services'
+    id 'com.google.gms.google-services'  // Google services plugin
 }
 
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.10.0')
+    // Add other Firebase dependencies as needed, for example:
+    // implementation 'com.google.firebase:firebase-analytics'
 }
 
 android {
-    namespace = "com.example.title_proj" // Define namespace once
+     // Define namespace once
     compileSdkVersion flutter.compileSdkVersion  // Use Flutter's compileSdkVersion
 
     ndkVersion = flutter.ndkVersion
@@ -25,7 +27,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.title_proj"  // Use your package name
+        applicationId = "com.example.title_proj" 
+        namespace = "com.example.title_proj" // Use your package name
         minSdkVersion 23
         targetSdkVersion 33
         versionCode = flutter.versionCode
@@ -42,3 +45,6 @@ android {
 flutter {
     source = "../.."
 }
+
+// Apply the Google Services plugin at the bottom
+apply plugin: 'com.google.gms.google-services'  // Apply Google services

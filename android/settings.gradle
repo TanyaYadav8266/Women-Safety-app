@@ -22,4 +22,5 @@ plugins {
     id 'com.android.application' version '8.2.1' apply false
 }
 
-include ":app"
+// Include the app and background_sms modules here
+include ":app", ":flutter_sms"

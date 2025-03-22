@@ -1,0 +1,2 @@
+C:/Users/HIMANSHU/final_project/Women-Safety-app/android/app/.cxx/RelWithDebInfo/5y522o5m/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/HIMANSHU/final_project/Women-Safety-app/android/app/.cxx/RelWithDebInfo/5y522o5m/x86_64/CMakeFiles/rebuild_cache.dir
