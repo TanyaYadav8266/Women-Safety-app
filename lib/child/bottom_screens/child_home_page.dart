@@ -40,9 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // Function to send an SMS using Twilio
   void _sendTwilioSms() async {
     // Twilio credentials (replace with your actual credentials)
-    const String accountSid = 'AC10a555f8b3a2caf0a6e87b018902602e';
-    const String authToken = '8eed3a16121e786ae4fc3ac21adf0be5';
-    const String fromPhoneNumber = '+15392653740'; // Your Twilio phone number
+    const String accountSid = '';
+    const String authToken = '';
+    const String fromPhoneNumber = ''; // Your Twilio phone number
     const String toPhoneNumber =
         '+918726744569'; // Recipient phone number (replace with actual number)
 
