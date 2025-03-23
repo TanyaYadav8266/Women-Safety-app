@@ -4,6 +4,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:http/http.dart' as http; // HTTP package for sending requests
+import 'package:title_proj/widgets/home_widgets/SOSButton/emergency_service.dart';
+import 'package:title_proj/widgets/home_widgets/listview/DetectCamera.dart';
+import 'package:title_proj/widgets/home_widgets/listview/RiskAnalysis.dart';
+import 'package:title_proj/widgets/home_widgets/listview/SelfDefence.dart';
 import 'package:vibration/vibration.dart'; // Import vibration package
 
 import 'package:title_proj/widgets/home_widgets/CustomCarouel.dart';
@@ -208,29 +212,77 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    CustomCarouel(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Emergency',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
+                child: 
+                ListView(
+  shrinkWrap: true,
+  children: [
+  CustomCarouel(),
+  Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(
+      'Emergency',
+      style: TextStyle(
+        fontSize: 20, 
+        fontWeight: FontWeight.bold
+      ),
+    ),
+  ),
+  Emergency(
+    onSosPressed: () async {
+      try {
+        // Call emergency service handler
+        await EmergencyService().handleEmergency();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Emergency alert sent successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          )
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send alert: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          )
+        );
+      }
+    },
+  ),
+  Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(
+      'Explore LiveSafe',
+      style: TextStyle(
+        fontSize: 20, 
+        fontWeight: FontWeight.bold
+      ),
+    ),
+  ),
+  LiveSafe(),
+  SafeHome(),
+  Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(
+      'SafeSpace',
+      style: TextStyle(
+        fontSize: 20, 
+        fontWeight: FontWeight.bold
+      ),
+    ),
+  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        DetectCameras(),
+                        RiskAnalysis(),
+                        SelfDefence(),
+                      ],
                     ),
-                    Emergency(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Explore LiveSafe',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
                     ),
-                    LiveSafe(),
-                    SafeHome(),
                   ],
                 ),
               )
