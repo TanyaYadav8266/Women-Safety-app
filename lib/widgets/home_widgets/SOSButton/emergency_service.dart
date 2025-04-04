@@ -101,9 +101,9 @@ Future<void> _checkPermissions() async {
 
   Future<void> _sendSMS(String toNumber, String message) async {
     // Replace with your SMS gateway implementation
-    const accountSid = 'ACcf9c295dac65f3fd31b64772ea79e056';
-    const authToken = '49be9e5ffd95681555887b1fa59737cd';
-    const fromNumber = '+12564742482';
+    const accountSid = '';
+    const authToken = '';
+    const fromNumber = '';
 
     final response = await http.post(
       Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json'),
