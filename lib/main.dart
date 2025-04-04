@@ -2,9 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:title_proj/child/LoginScreen.dart';
+import 'package:title_proj/child/WelcomeScreen.dart';
 import 'package:title_proj/child/bottom_page.dart';
-import 'package:title_proj/child/register_child.dart'; 
-import 'package:title_proj/parent/parent_register_screen.dart'; 
+import 'package:title_proj/child/register_child.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,19 +21,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'SHEild',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          primary: Colors.deepPurple,
+        ),
+        scaffoldBackgroundColor: Colors.white,
       ),
-      initialRoute: '/',  
+      initialRoute: '/',
       routes: {
-        '/': (context) => BottomPage(), // Default screen
-        '/register_child': (context) => RegisterChildScreen(), 
-        '/parent_register': (context) => ParentRegisterScreen(),
+        '/': (context) =>  WelcomeScreen(),
+        '/login': (context) => LoginScreen(),
+        '/register': (context) => RegisterScreen(),
+        '/home': (context) => const BottomPage(),
       },
     );
   }
