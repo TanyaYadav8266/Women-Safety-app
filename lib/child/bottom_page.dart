@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:title_proj/child/bottom_screens/ExploreMore.dart';
 import 'package:title_proj/child/bottom_screens/add_contacts.dart';
 import 'package:title_proj/child/bottom_screens/chat_page.dart';
 import 'package:title_proj/child/bottom_screens/child_home_page.dart';
@@ -19,7 +20,7 @@ class _BottomPageState extends State<BottomPage> {
     HomeScreen(),
     AddContactsPage(),
     ChatPage(),
-    ProfilePage(),
+    ExploreMorePage(),
     ReviewPage(),
   ];
 
@@ -29,42 +30,61 @@ class _BottomPageState extends State<BottomPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: pages[_currentIndex]), // Prevents UI from being hidden
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed, // Fixes shifting issue
-          currentIndex: _currentIndex,
-          selectedItemColor: Colors.deepPurple,
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(
-              label: 'Home',
-              icon: Icon(Icons.home),
-            ),
-            BottomNavigationBarItem(
-              label: 'Contacts',
-              icon: Icon(Icons.contacts),
-            ),
-            BottomNavigationBarItem(
-              label: 'Chats',
-              icon: Icon(Icons.chat),
-            ),
-            BottomNavigationBarItem(
-              label: 'Profile',
-              icon: Icon(Icons.account_circle),
-            ),
-            BottomNavigationBarItem(
-              label: 'Reviews',
-              icon: Icon(Icons.rate_review),
+      body: SafeArea(child: pages[_currentIndex]),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 10,
+              offset: Offset(0, -5),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            currentIndex: _currentIndex,
+            selectedItemColor: Colors.deepPurple,
+            unselectedItemColor: Colors.grey,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(
+                label: 'Home',
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+              ),
+              BottomNavigationBarItem(
+                label: 'Contacts',
+                icon: Icon(Icons.contacts_outlined),
+                activeIcon: Icon(Icons.contacts),
+              ),
+              BottomNavigationBarItem(
+                label: 'Chats',
+                icon: Icon(Icons.chat_outlined),
+                activeIcon: Icon(Icons.chat),
+              ),
+              BottomNavigationBarItem(
+                label: 'Explore',
+                icon: Icon(Icons.explore_outlined),
+                activeIcon: Icon(Icons.explore),
+              ),
+              BottomNavigationBarItem(
+                label: 'Reviews',
+                icon: Icon(Icons.reviews_outlined),
+                activeIcon: Icon(Icons.reviews),
+              ),
+            ],
+          ),
         ),
       ),
     );

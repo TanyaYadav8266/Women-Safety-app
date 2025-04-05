@@ -8,8 +8,9 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
-  final Function(String?)? onSaved; // ✅ Added this
-  final int? maxLines;  // Added this
+  final Function(String?)? onSaved;
+  final int? maxLines;
+  final bool readOnly; // Add readOnly parameter
 
   const CustomTextField({
     Key? key,
@@ -19,9 +20,10 @@ class CustomTextField extends StatelessWidget {
     this.isPassword = false,
     this.controller,
     this.keyboardType,
-    this.validator,
-    this.onSaved, // ✅ Added this
-    this.maxLines,  // Added this
+    this.validator, // This is the correct parameter name (validator, not validate)
+    this.onSaved,
+    this.maxLines,
+    this.readOnly = false, // Default to false
   }) : super(key: key);
 
   @override
@@ -30,6 +32,7 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
+      readOnly: readOnly, // Pass to TextFormField
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefix,
@@ -38,9 +41,9 @@ class CustomTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
         ),
       ),
-      validator: validator,
-      onSaved: onSaved, // ✅ Added this
-      maxLines: maxLines,  // Pass maxLines to TextFormField
+      validator: validator, // Use validator (not validate)
+      onSaved: onSaved,
+      maxLines: maxLines,
     );
   }
 }
