@@ -15,7 +15,6 @@ class BottomPage extends StatefulWidget {
 }
 
 class _BottomPageState extends State<BottomPage> {
-  // List of pages for navigation
   final List<Widget> pages = [
     HomeScreen(),
     AddContactsPage(),
@@ -24,64 +23,79 @@ class _BottomPageState extends State<BottomPage> {
     ReviewPage(),
   ];
 
-  // Current selected index
   int _currentIndex = 0;
+  double _iconSize = 28.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: pages[_currentIndex]),
+      body: SafeArea(
+        child: AnimatedSwitcher(
+          duration: Duration(milliseconds: 300),
+          child: pages[_currentIndex],
+        ),
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
-              offset: Offset(0, -5),
+              spreadRadius: 2,
+              offset: Offset(0, -2),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             currentIndex: _currentIndex,
-            selectedItemColor: Colors.deepPurple,
-            unselectedItemColor: Colors.grey,
-            selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+            selectedItemColor: Colors.deepPurpleAccent[700],
+            unselectedItemColor: Colors.grey[600],
+            selectedLabelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              letterSpacing: 0.5,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
             showSelectedLabels: true,
             showUnselectedLabels: true,
+            elevation: 10,
             onTap: (index) {
               setState(() {
                 _currentIndex = index;
               });
             },
-            items: const [
+            items: [
               BottomNavigationBarItem(
                 label: 'Home',
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
+                icon: Icon(Icons.home_outlined, size: _iconSize),
+                activeIcon: Icon(Icons.home_filled, size: _iconSize),
               ),
               BottomNavigationBarItem(
                 label: 'Contacts',
-                icon: Icon(Icons.contacts_outlined),
-                activeIcon: Icon(Icons.contacts),
+                icon: Icon(Icons.contacts_outlined, size: _iconSize),
+                activeIcon: Icon(Icons.contact_page, size: _iconSize),
               ),
               BottomNavigationBarItem(
-                label: 'Chats',
-                icon: Icon(Icons.chat_outlined),
-                activeIcon: Icon(Icons.chat),
+                label: 'Chat',
+                icon: Icon(Icons.chat_bubble_outline, size: _iconSize),
+                activeIcon: Icon(Icons.chat_bubble, size: _iconSize),
               ),
               BottomNavigationBarItem(
                 label: 'Explore',
-                icon: Icon(Icons.explore_outlined),
-                activeIcon: Icon(Icons.explore),
+                icon: Icon(Icons.explore_outlined, size: _iconSize),
+                activeIcon: Icon(Icons.explore, size: _iconSize),
               ),
               BottomNavigationBarItem(
                 label: 'Reviews',
-                icon: Icon(Icons.reviews_outlined),
-                activeIcon: Icon(Icons.reviews),
+                icon: Icon(Icons.star_border, size: _iconSize),
+                activeIcon: Icon(Icons.star, size: _iconSize),
               ),
             ],
           ),
