@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
-
 import 'package:latlong2/latlong.dart';
 
 class CrimeMapPage extends StatefulWidget {
@@ -13,53 +11,62 @@ class CrimeMapPage extends StatefulWidget {
 }
 
 class _CrimeMapPageState extends State<CrimeMapPage> {
-  List<dynamic> crimeData = []; // Stores crime data
-  Set<Marker> _markers = {}; // Stores map markers
-  LatLng? _userLocation; // Stores the user's location
-  String _userRiskLevel = "Safe Zone"; // Default risk level
+  List<dynamic> crimeData = [];
+  Set<Marker> _markers = {};
+  LatLng? _userLocation;
+  String _userRiskLevel = "Safe Zone";
 
   @override
   void initState() {
     super.initState();
-    _loadData(); // Load crime data
-    _getUserLocation(); // Fetch user's location
+    _requestLocationPermissionAndInit();
   }
 
-  // Function to load crime data from JSON
-  Future<void> _loadData() async {
-    String jsonString = await rootBundle.loadString('assets/crime.json');
-    List<dynamic> data = jsonDecode(jsonString);
-
-    // Print loaded data
-    print("Loaded Data: $data");
-
-    // Add risk_level to each entry based on total_crimes
-    for (var entry in data) {
-      entry['risk_level'] = _categorizeRisk(entry['total_crimes'].toInt()); // Convert to int
+  Future<void> _requestLocationPermissionAndInit() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Location permission denied. Cannot fetch zone info."),
+        ));
+        return;
+      }
     }
 
-    setState(() {
-      crimeData = data;
-      _addMarkers(crimeData);
-    });
+    _loadCrimeData();
+    _getUserLocation();
   }
 
-  // Function to categorize risk based on total_crimes
-String _categorizeRisk(int totalCrimes) {
-  if (totalCrimes > 5000) {
-    return 'Extremely Risky';
-  } else if (totalCrimes > 1000) {
-    return 'High Risk';
-  } else if (totalCrimes > 500) {
-    return 'Medium Risk';
-  } else {
+  Future<void> _loadCrimeData() async {
+    try {
+      String jsonString = await rootBundle.loadString('assets/crime.json');
+      List<dynamic> data = jsonDecode(jsonString);
+
+      for (var entry in data) {
+        entry['risk_level'] = _categorizeRisk(entry['total_crimes'].toInt());
+      }
+
+      setState(() {
+        crimeData = data;
+        _addMarkers();
+      });
+    } catch (e) {
+      print("Error loading data: $e");
+    }
+  }
+
+  String _categorizeRisk(int totalCrimes) {
+    if (totalCrimes > 5000) return 'Extremely Risky';
+    if (totalCrimes > 1000) return 'High Risk';
+    if (totalCrimes > 500) return 'Medium Risk';
     return 'Low Risk';
   }
-}
 
-  // Function to add markers to the map
-  void _addMarkers(List<dynamic> crimeData) {
-    print("Adding Markers: $crimeData"); // Print markers data
+  void _addMarkers() {
+    _markers.clear();
     for (var entry in crimeData) {
       _markers.add(
         Marker(
@@ -74,13 +81,13 @@ String _categorizeRisk(int totalCrimes) {
         ),
       );
     }
+    setState(() {});
   }
 
-  // Function to get marker color based on risk level
   Color _getMarkerColor(String riskLevel) {
     switch (riskLevel) {
       case 'Extremely Risky':
-        return Colors.purple; // Use purple for extremely risky zones
+        return Colors.purple;
       case 'High Risk':
         return Colors.red;
       case 'Medium Risk':
@@ -92,34 +99,23 @@ String _categorizeRisk(int totalCrimes) {
     }
   }
 
-  // Function to fetch the user's location and check risk level
   Future<void> _getUserLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw 'Location services are disabled.';
+    try {
+      Position position = await Geolocator.getCurrentPosition();
+      setState(() {
+        _userLocation = LatLng(position.latitude, position.longitude);
+      });
+      _checkZoneAndShowAlert();
+    } catch (e) {
+      print("Error getting user location: $e");
     }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw 'Location permissions are denied';
-      }
-    }
-
-    Position position = await Geolocator.getCurrentPosition();
-    setState(() {
-      _userLocation = LatLng(position.latitude, position.longitude);
-      _checkRiskLevel(); // Check for nearby crime spots
-    });
   }
 
-  // Function to check risk level based on crime locations within 5km
-  void _checkRiskLevel() {
+  void _checkZoneAndShowAlert() {
     if (_userLocation == null || crimeData.isEmpty) return;
 
-    double alertRadius = 5000; // 5km in meters
-    String riskZone = "Safe Zone";
+    double radius = 5000;
+    String zone = "Safe Zone";
 
     for (var entry in crimeData) {
       double distance = Geolocator.distanceBetween(
@@ -129,43 +125,73 @@ String _categorizeRisk(int totalCrimes) {
         entry['Longitude'],
       );
 
-      if (distance <= alertRadius) {
-        if (entry['risk_level'] == 'Extremely Risky') {
-          riskZone = "Extremely Risky Zone";
-          break; // Immediately stop if an extremely risky zone is found
-        } else if (entry['risk_level'] == 'High Risk') {
-          riskZone = "High Risk Zone";
-        } else if (entry['risk_level'] == 'Medium Risk') {
-          riskZone = "Medium Risk Zone";
-        } else if (entry['risk_level'] == 'Low Risk') {
-          riskZone = "Low Risk Zone";
+      if (distance <= radius) {
+        switch (entry['risk_level']) {
+          case 'Extremely Risky':
+            zone = 'Extremely Risky Zone';
+            break;
+          case 'High Risk':
+            if (zone != 'Extremely Risky Zone') zone = 'High Risk Zone';
+            break;
+          case 'Medium Risk':
+            if (zone == 'Safe Zone') zone = 'Medium Risk Zone';
+            break;
+          case 'Low Risk':
+            if (zone == 'Safe Zone') zone = 'Low Risk Zone';
+            break;
         }
       }
     }
 
     setState(() {
-      _userRiskLevel = riskZone;
+      _userRiskLevel = zone;
     });
 
-    _showAlert(riskZone);
+    _showZoneAlert(zone);
   }
 
-  // Function to show an alert based on the risk zone
-  void _showAlert(String riskZone) {
-    String message = (riskZone == "Safe Zone")
-        ? "You are in a Safe Zone."
-        : "Warning: You are in a $riskZone! Stay alert.";
+  void _showZoneAlert(String zone) {
+    IconData icon;
+    Color color;
+
+    switch (zone) {
+      case 'Extremely Risky Zone':
+        icon = Icons.dangerous;
+        color = Colors.purple;
+        break;
+      case 'High Risk Zone':
+        icon = Icons.warning_amber;
+        color = Colors.red;
+        break;
+      case 'Medium Risk Zone':
+        icon = Icons.report_problem;
+        color = Colors.orange;
+        break;
+      case 'Low Risk Zone':
+        icon = Icons.info;
+        color = Colors.green;
+        break;
+      default:
+        icon = Icons.check_circle;
+        color = Colors.blue;
+    }
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Safety Alert"),
-        content: Text(message),
+        title: Row(
+          children: [
+            Icon(icon, color: color),
+            SizedBox(width: 10),
+            Text("Zone Alert"),
+          ],
+        ),
+        content: Text("You are currently in a $zone."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text("OK"),
-          ),
+          )
         ],
       ),
     );
@@ -176,27 +202,33 @@ String _categorizeRisk(int totalCrimes) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Crime Map"),
-        backgroundColor: Color.fromRGBO(255, 33, 117, 1), // Your primary color
+        backgroundColor: Color.fromRGBO(255, 33, 117, 1),
       ),
       body: Stack(
         children: [
           FlutterMap(
             options: MapOptions(
-              initialCenter: _userLocation ?? LatLng(20.5937, 78.9629), // Default to India's center
+              initialCenter: _userLocation ?? LatLng(20.5937, 78.9629),
               initialZoom: 5.0,
             ),
             children: [
               TileLayer(
                 urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                // Remove subdomains
               ),
-              MarkerLayer(
-                markers: _markers.toList(),
-              ),
+              if (_userLocation != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _userLocation!,
+                      width: 40,
+                      height: 40,
+                      child: Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                    ),
+                    ..._markers.toList(),
+                  ],
+                ),
             ],
           ),
-          
-          // Display risk level at the bottom
           Positioned(
             bottom: 20,
             left: 20,
@@ -206,17 +238,15 @@ String _categorizeRisk(int totalCrimes) {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.warning, color: _getMarkerColor(_userRiskLevel)),
-                  SizedBox(width: 10),
+                  SizedBox(width: 8),
                   Text(
                     "Zone: $_userRiskLevel",
                     style: TextStyle(
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: _getMarkerColor(_userRiskLevel),
                     ),
