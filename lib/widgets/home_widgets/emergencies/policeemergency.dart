@@ -6,22 +6,24 @@ class PoliceEmergency extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final cardWidth = screenSize.width * 0.8;  // Slightly narrower
+    final cardHeight = screenSize.height * 0.16;  // More compact height
+
     return Padding(
-      padding: const EdgeInsets.only(left: 10.0, bottom: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: GestureDetector(
-        onTap: () {
-          FlutterDirectCallerPlugin.callNumber("181");
-        },
+        onTap: () => FlutterDirectCallerPlugin.callNumber("181"),
         child: Card(
           elevation: 5,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),  // Slightly smaller radius
           ),
           child: Container(
-            height: 160, // Adjusted height
-            width: MediaQuery.of(context).size.width * 0.7,
+            width: cardWidth,
+            height: cardHeight,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -32,46 +34,69 @@ class PoliceEmergency extends StatelessWidget {
               ),
             ),
             padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundColor: Colors.white.withOpacity(0.5),
-                  child: Image.asset('assets/alert.png'),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Women Helpline',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: MediaQuery.of(context).size.width * 0.06,
+                // Icon and Text
+                Positioned(
+                  left: 8,
+                  top: 8,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: cardHeight * 0.2,  // Relative to card height
+                        backgroundColor: Colors.white.withOpacity(0.5),
+                        child: Image.asset(
+                          'assets/alert.png',
+                          width: cardHeight * 0.3,
+                          height: cardHeight * 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Women Helpline',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: cardWidth * 0.05,  // Responsive font
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Call 181 for assistance',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: cardWidth * 0.035,  // Slightly smaller
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Call 181 for Women’s Helpline',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.width * 0.045,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  height: 30,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '181',
-                      style: TextStyle(
-                        color: Colors.red[300],
-                        fontWeight: FontWeight.bold,
-                        fontSize: MediaQuery.of(context).size.width * 0.055,
+                // Number Badge
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: Container(
+                    width: cardWidth * 0.2,
+                    height: cardHeight * 0.25,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '181',
+                        style: TextStyle(
+                          color: Colors.red[300],
+                          fontWeight: FontWeight.bold,
+                          fontSize: cardWidth * 0.06,
+                        ),
                       ),
                     ),
                   ),
