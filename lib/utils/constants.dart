@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Color primaryColor = Color.fromRGBO(255, 33, 117, 1);
+Color primaryColor =  Color(0xFFEC407A);
 
 void goTo(BuildContext context, Widget nextScreen) {
   Navigator.push( 
