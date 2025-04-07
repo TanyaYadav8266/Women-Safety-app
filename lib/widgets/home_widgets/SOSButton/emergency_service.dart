@@ -1,148 +1,88 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert'; // This import provides base64Encode and utf8
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EmergencyService {
   static final EmergencyService _instance = EmergencyService._internal();
   factory EmergencyService() => _instance;
   EmergencyService._internal();
 
-  late Database _database;
-  final Connectivity _connectivity = Connectivity();
-  final List<String> _trustedContacts = [
-    '+918335841730', // Police
-    '+918335841730', // Family Member
-    '+918335841730'  // Hospital
-  ];
+  final double _shakeThreshold = 2.7;
+  final int _minShakeIntervalMs = 2000;
+  DateTime _lastShakeTime = DateTime.now();
+  StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
 
-  Future<void> initialize() async {
-    await _initDatabase();
-    await _checkPermissions();
-    _setupConnectivity();
-  }
+  Future<void> startShakeDetection(Function onShakeDetected) async {
+    if (_accelerometerSubscription != null) return;
 
-  Future<void> _initDatabase() async {
-    _database = await openDatabase(
-      join(await getDatabasesPath(), 'emergency.db'),
-      onCreate: (db, version) => db.execute('''
-        CREATE TABLE emergency_messages(
-          id INTEGER PRIMARY KEY,
-          message TEXT,
-          latitude REAL,
-          longitude REAL,
-          timestamp INTEGER
-        )
-      '''),
-      version: 1,
-    );
-  }
+    _accelerometerSubscription = userAccelerometerEvents.listen((event) {
+      final now = DateTime.now();
+      final timeSinceLastShake = now.difference(_lastShakeTime).inMilliseconds;
 
-Future<void> _checkPermissions() async {
-  await [
-    Permission.location,
-    Permission.sms,  // If sending SMS
-    Permission.phone, // If making phone calls
-    Permission.storage, // For database access
-  ].request();
-}
+      if (timeSinceLastShake < _minShakeIntervalMs) return;
 
-  void _setupConnectivity() {
-    _connectivity.onConnectivityChanged.listen((result) async {
-      if (result != ConnectivityResult.none) {
-        await _sendPendingMessages();
+      final acceleration = (event.x.abs() + event.y.abs() + event.z.abs()) / 3;
+
+      if (acceleration > _shakeThreshold) {
+        _lastShakeTime = now;
+        onShakeDetected();
       }
     });
+  }
+
+  void stopShakeDetection() {
+    _accelerometerSubscription?.cancel();
+    _accelerometerSubscription = null;
   }
 
   Future<void> handleEmergency() async {
-    final position = await Geolocator.getCurrentPosition();
-    final message = _createMessage(position);
-
-    if (await _checkConnection()) {
-      await _sendViaInternet(message);
-    } else {
-      await _storeMessage(message, position);
-    }
-  }
-
-  String _createMessage(Position position) {
-    return jsonEncode({
-      'emergency': 'SOS Activated!',
-      'location': {
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'accuracy': position.accuracy
-      },
-      'timestamp': DateTime.now().toIso8601String(),
-    });
-  }
-
-  Future<bool> _checkConnection() async {
-    final result = await _connectivity.checkConnectivity();
-    return result != ConnectivityResult.none;
-  }
-
-  Future<void> _sendViaInternet(String message) async {
     try {
-      // Send to all trusted contacts
-      for (final contact in _trustedContacts) {
-        await _sendSMS(contact, message);
-      }
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      await _sendEmergencySMS(position);
     } catch (e) {
-      print('Error sending message: $e');
-      throw Exception('Failed to send emergency message');
+      throw Exception('Failed to handle emergency: $e');
     }
   }
 
-  Future<void> _sendSMS(String toNumber, String message) async {
-    // Replace with your SMS gateway implementation
-    const accountSid = '';
-    const authToken = '';
-    const fromNumber = '';
+  Future<void> _sendEmergencySMS(Position position) async {
+    const accountSid = 'YOUR_TWILIO_ACCOUNT_SID';
+    const authToken = 'YOUR_TWILIO_AUTH_TOKEN';
+    const fromNumber = 'YOUR_TWILIO_PHONE_NUMBER';
+    const toNumbers = ['+918448018504']; // Add emergency contacts here
 
-    final response = await http.post(
-      Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json'),
-      headers: {
-        'Authorization': 'Basic ${base64Encode(utf8.encode('$accountSid:$authToken'))}',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'To': toNumber,
-        'From': fromNumber,
-        'Body': message,
-      },
-    );
+    final locationUrl = 'https://www.google.com/maps?q=${position.latitude},${position.longitude}';
+    final message = 'EMERGENCY! Need help at: $locationUrl';
 
-    if (response.statusCode != 201) {
-      throw Exception('Failed to send SMS to $toNumber');
-    }
-  }
+    // Create the basic auth token
+    final credentials = '$accountSid:$authToken';
+    final bytes = utf8.encode(credentials); // Now using the imported utf8
+    final base64Str = base64.encode(bytes); // Now using the imported base64
 
-  Future<void> _storeMessage(String message, Position position) async {
-    await _database.insert('emergency_messages', {
-      'message': message,
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    });
-  }
-
-  Future<void> _sendPendingMessages() async {
-    final messages = await _database.query('emergency_messages');
-    for (final msg in messages) {
+    for (final toNumber in toNumbers) {
       try {
-        await _sendViaInternet(msg['message'] as String);
-        await _database.delete('emergency_messages', 
-          where: 'id = ?', 
-          whereArgs: [msg['id']]
+        final response = await http.post(
+          Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json'),
+          headers: {
+            'Authorization': 'Basic $base64Str',
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: {
+            'From': fromNumber,
+            'To': toNumber,
+            'Body': message,
+          },
         );
+
+        if (response.statusCode != 201) {
+          throw Exception('Failed to send SMS to $toNumber');
+        }
       } catch (e) {
-        print('Failed to send pending message: $e');
+        throw Exception('Failed to send SMS: $e');
       }
     }
   }

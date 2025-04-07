@@ -23,7 +23,7 @@ class CustomTextField extends StatelessWidget {
     this.validator, // This is the correct parameter name (validator, not validate)
     this.onSaved,
     this.maxLines,
-    this.readOnly = false, // Default to false
+    this.readOnly = false, required String prefixText, // Default to false
   }) : super(key: key);
 
   @override

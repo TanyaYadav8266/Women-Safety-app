@@ -232,13 +232,13 @@ class _ReviewPageState extends State<ReviewPage> {
             children: [
               CustomTextField(
                 hintText: 'Location name',
-                controller: locationC,
+                controller: locationC, prefixText: '',
               ),
               SizedBox(height: 16),
               CustomTextField(
                 controller: viewsC,
                 hintText: 'Your review comments',
-                maxLines: 3,
+                maxLines: 3, prefixText: '',
               ),
               SizedBox(height: 16),
               RatingBar.builder(
