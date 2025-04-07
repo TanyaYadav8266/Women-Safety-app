@@ -7,35 +7,56 @@ import 'package:title_proj/widgets/home_widgets/live_safe/PoliceStationCard.dart
 import 'package:url_launcher/url_launcher.dart';
 
 class LiveSafe extends StatelessWidget {
-  const LiveSafe({Key? key}) : super(key:key);
+  const LiveSafe({Key? key}) : super(key: key);
 
-  static Future<void> openMap(String location) async{
-    String google_url='https://www.google.com/maps/search/$location';
-    final Uri _url = Uri.parse(google_url);
-    try{
+  static Future<void> openMap(String location) async {
+    String googleUrl = 'https://www.google.com/maps/search/$location';
+    final Uri _url = Uri.parse(googleUrl);
+    try {
       await launchUrl(_url);
-    }catch(e){
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: 'something went wrong! call emergency number');
+          msg: 'Something went wrong! Call emergency number',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
-      height: 90,
+      height: 120, // Increased height for better spacing
       width: MediaQuery.of(context).size.width,
       child: ListView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
         children: [
-          PoliceStationCard(onMapFunction: openMap),
-          HospitalCard(onMapFunction: openMap),
-          PharmacyCard(onMapFunction: openMap),
-          BusStationCard(onMapFunction: openMap),
+          PoliceStationCard(
+            onMapFunction: openMap,
+            isDarkMode: isDarkMode,
+          ),
+          const SizedBox(width: 12),
+          HospitalCard(
+            onMapFunction: openMap,
+            isDarkMode: isDarkMode,
+          ),
+          const SizedBox(width: 12),
+          PharmacyCard(
+            onMapFunction: openMap,
+            isDarkMode: isDarkMode,
+          ),
+          const SizedBox(width: 12),
+          BusStationCard(
+            onMapFunction: openMap,
+            isDarkMode: isDarkMode,
+          ),
         ],
-        )
+      ),
     );
   }
 }
