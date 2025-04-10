@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:twilio_flutter/twilio_flutter.dart'; // Import Twilio package
-import 'package:title_proj/components/PrimaryButton.dart';
+import 'package:twilio_flutter/twilio_flutter.dart';
 
 class SafeHome extends StatefulWidget {
   @override
@@ -13,117 +12,133 @@ class SafeHome extends StatefulWidget {
 class _SafeHomeState extends State<SafeHome> {
   Position? _currentPosition;
   LocationPermission? permission;
-
-  // Initialize TwilioFlutter with your credentials
-  late TwilioFlutter twilioFlutter;  // Use 'late' to tell Dart the variable will be initialized later
+  late TwilioFlutter twilioFlutter;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize Twilio with your Twilio credentials
     twilioFlutter = TwilioFlutter(
-      accountSid: 'your_account_sid',  // Replace with your Account SID from Twilio
-      authToken: 'your_auth_token',    // Replace with your Auth Token from Twilio
-      twilioNumber: 'your_twilio_number', // Replace with your Twilio phone number
+      accountSid: 'ACf9f5049fb42a7462d7cd83dfc8311280',
+      authToken: '8de7027b99f6a71f5d95b0ce46df9723',
+      twilioNumber: '+14632836151',
     );
   }
 
-  // Request permissions
   _getPermission() async {
     await [Permission.sms, Permission.location].request();
   }
 
-  // Check if the SMS permission is granted
-  _isPermissionGranted() async => await Permission.sms.status.isGranted;
-
-  // Send SMS using Twilio
   _sendSms(String phoneNumber, String message) async {
     try {
       final messageSent = await twilioFlutter.sendSMS(
-        toNumber: phoneNumber,  // The recipient's phone number
-        messageBody: message,   // The message to send
+        toNumber: phoneNumber,
+        messageBody: message,
       );
-      Fluttertoast.showToast(msg: "Message sent: $messageSent");
+      Fluttertoast.showToast(msg: "Message sent!");
     } catch (error) {
-      Fluttertoast.showToast(msg: "Message failed: $error");
+      Fluttertoast.showToast(msg: "Failed to send message: $error");
     }
   }
 
-  // Get current location
   _getCurrentLocation() async {
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      Fluttertoast.showToast(msg: "Location permission denied");
+      if (permission == LocationPermission.denied) {
+        Fluttertoast.showToast(msg: "Location permission denied");
+        return;
+      }
       if (permission == LocationPermission.deniedForever) {
         Fluttertoast.showToast(msg: "Location permission denied permanently");
+        return;
       }
     }
 
-    // Get current location after permission is granted
-    Geolocator.getCurrentPosition(
+    try {
+      Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        forceAndroidLocationManager: true).then((Position position) {
+      );
       setState(() {
         _currentPosition = position;
       });
-    }).catchError((e) {
-      Fluttertoast.showToast(msg: "Failed to get location");
-    });
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error getting location: $e");
+    }
   }
 
-  // Show bottom sheet for sending location or alert
   showModelSafeHome(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height / 1.4,
-          child: Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Send your current location immediately",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20),
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Send your current location immediately",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pink[800],
                 ),
-                SizedBox(height: 10),
-                PrimaryButton(
-                  title: "GET LOCATION",
-                  onPressed: () {
-                    _getCurrentLocation();
-                    if (_currentPosition != null) {
-                      Fluttertoast.showToast(msg: "Location fetched");
-                    } else {
-                      Fluttertoast.showToast(msg: "Failed to fetch location");
-                    }
-                  },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await _getCurrentLocation();
+                  if (_currentPosition != null) {
+                    Fluttertoast.showToast(msg: "Location fetched");
+                  } else {
+                    Fluttertoast.showToast(msg: "Failed to fetch location");
+                  }
+                },
+                icon: Icon(Icons.location_on),
+                label: Text(
+                  "GET LOCATION",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                SizedBox(height: 10),
-                PrimaryButton(
-                  title: "SEND ALERT",
-                  onPressed: () {
-                    if (_currentPosition != null) {
-                      String message =
-                          "Emergency! My location is: Lat: ${_currentPosition?.latitude}, Long: ${_currentPosition?.longitude}";
-                      _sendSms("8448018504", message);  // Replace with the recipient's phone number
-                    } else {
-                      Fluttertoast.showToast(msg: "Location not available yet");
-                    }
-                  },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  backgroundColor: Colors.black,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  if (_currentPosition != null) {
+                    String message =
+                        "Emergency! My location is: Lat: ${_currentPosition?.latitude}, Long: ${_currentPosition?.longitude}";
+                    _sendSms("+918448018504", message);
+                  } else {
+                    Fluttertoast.showToast(msg: "Location not available yet");
+                  }
+                },
+                icon: Icon(Icons.warning),
+                label: Text(
+                  "SEND ALERT",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  backgroundColor: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
           ),
-          decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 240, 155, 205),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(20),
-              )),
         );
       },
     );
@@ -140,22 +155,42 @@ class _SafeHomeState extends State<SafeHome> {
         ),
         child: Container(
           height: 180,
-          width: MediaQuery.of(context).size.width * 0.7,
-          decoration: BoxDecoration(),
+          width: MediaQuery.of(context).size.width * 0.8,
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Row(
             children: [
               Expanded(
-                  child: Column(
-                children: [
-                  ListTile(
-                    title: Text("Send Location"),
-                    subtitle: Text("Share Location"),
-                  ),
-                ],
-              )),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Send Location",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.pink[800]),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Share your real-time location in an emergency.",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
+              ),
               ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset('assets/Safehome.jpg'))
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/Safehome.jpg',
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.cover,
+                ),
+              )
             ],
           ),
         ),

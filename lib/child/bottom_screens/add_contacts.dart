@@ -39,6 +39,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
     bool confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Remove Contact'),
         content: Text('Are you sure you want to remove ${contact.name}?'),
         actions: [
@@ -148,171 +149,154 @@ class _AddContactsPageState extends State<AddContactsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Trusted Contacts',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Color(0xFFEC407A),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade50, Colors.white],
-          ),
+        title: const Text(
+          'Trusted Contacts',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
+        centerTitle: true,
+        elevation: 1,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Emergency Contacts',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Emergency Contacts',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueGrey,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add trusted people who can be contacted during emergencies.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEC407A),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add trusted contacts who will be notified in case of emergency',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Theme(
-                      data: Theme.of(context).copyWith(
-                        textButtonTheme: TextButtonThemeData(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white, // Text color
+                    onPressed: pickContact,
+                    icon: const Icon(Icons.person_add_alt_1),
+                    label: const Text("Add Trusted Contact"),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: count == 0
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.contact_page,
+                            size: 80,
+                            color: Colors.grey.shade400,
                           ),
-                        ),
-                      ),
-                      child: PrimaryButton(
-                        title: "Add Trusted Contact",
-                        
-                        onPressed: pickContact,
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No trusted contacts yet',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Tap above to add your first contact',
+                            style: TextStyle(color: Colors.grey.shade500),
+                          ),
+                        ],
                       ),
                     )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: count == 0
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.contacts,
-                              size: 60,
-                              color: Colors.grey.shade400,
+                  : ListView.builder(
+                      itemCount: count,
+                      itemBuilder: (context, index) {
+                        final contact = contactList![index];
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12.withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            leading: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.purple.shade100,
+                              child: const Icon(Icons.person,
+                                  color: Colors.purple),
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No trusted contacts yet',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
+                            title: Text(
+                              contact.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add contacts to get started',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        itemCount: count,
-                        separatorBuilder: (context, index) => const Divider(
-                          height: 1,
-                          indent: 16,
-                          endIndent: 16,
-                        ),
-                        itemBuilder: (BuildContext context, int index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                            subtitle: Text(contact.number),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () => callContact(contact.number),
+                                  icon: Icon(Icons.call,
+                                      color: Colors.green.shade600),
+                                ),
+                                IconButton(
+                                  onPressed: () =>
+                                      deleteContact(contactList![index]),
+                                  icon: Icon(Icons.delete_outline_rounded,
+                                      color: Colors.red.shade400),
                                 ),
                               ],
                             ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.blue.shade100,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.blue.shade700,
-                                ),
-                              ),
-                              title: Text(
-                                contactList![index].name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              subtitle: Text(contactList![index].number),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () =>
-                                        callContact(contactList![index].number),
-                                    icon: Icon(
-                                      Icons.call,
-                                      color: Colors.green.shade600,
-                                    ),
-                                    tooltip: 'Call',
-                                  ),
-                                  IconButton(
-                                    onPressed: () =>
-                                        deleteContact(contactList![index]),
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.red.shade600,
-                                    ),
-                                    tooltip: 'Delete',
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );
