@@ -91,9 +91,9 @@ class _ContactsPageState extends State<ContactsPage> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
+              colors: [Colors.deepPurpleAccent, Colors.purple],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.purple[700]!, Colors.purple[500]!],
             ),
           ),
         ),
@@ -102,128 +102,120 @@ class _ContactsPageState extends State<ContactsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
+            Material(
+              elevation: 2,
+              borderRadius: BorderRadius.circular(12),
               child: ListTile(
-                leading: Icon(Icons.info_outline, color: Colors.purple),
+                contentPadding: EdgeInsets.all(16),
+                leading: Icon(Icons.shield, color: Colors.deepPurple),
                 title: Text('Trusted Contacts',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('These contacts will receive emergency alerts'),
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                subtitle: Text(
+                    'These contacts will receive your emergency location.'),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: pickContact,
               icon: Icon(Icons.person_add_alt_1, size: 20),
               label: Text('ADD TRUSTED CONTACT',
-                  style: TextStyle(fontSize: 14, letterSpacing: 0.5)),
+                  style: TextStyle(fontSize: 14, letterSpacing: 1)),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.purple[600],
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.deepPurple,
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                elevation: 3,
+                elevation: 5,
               ),
             ),
             SizedBox(height: 20),
             Expanded(
               child: count == 0
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.contacts, size: 60, color: Colors.grey[400]),
-                          SizedBox(height: 16),
-                          Text('No trusted contacts yet',
-                              style: TextStyle(
-                                  fontSize: 18, color: Colors.grey[600])),
-                          SizedBox(height: 8),
-                          Text('Add contacts to get started',
-                              style: TextStyle(color: Colors.grey[500])),
-                        ],
-                      ),
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.group_off,
+                            size: 80, color: Colors.grey[300]),
+                        SizedBox(height: 16),
+                        Text('No trusted contacts',
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[700])),
+                        SizedBox(height: 6),
+                        Text('Add some contacts to get started',
+                            style: TextStyle(color: Colors.grey[500])),
+                      ],
                     )
                   : ListView.separated(
                       itemCount: count,
-                      separatorBuilder: (context, index) => Divider(height: 1),
+                      separatorBuilder: (_, __) => SizedBox(height: 12),
                       itemBuilder: (BuildContext context, int index) {
                         return Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                                offset: Offset(0, 1),
-                              ),
+                                color: Colors.black12,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              )
                             ],
                           ),
                           child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                             leading: CircleAvatar(
                               backgroundColor: Colors.purple[100],
-                              child: Icon(Icons.person, color: Colors.purple[600]),
+                              child: Icon(Icons.person,
+                                  color: Colors.deepPurple),
                             ),
                             title: Text(contactList![index].name,
-                                style: TextStyle(fontWeight: FontWeight.w500)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 16)),
                             subtitle: Text(contactList![index].number),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  icon: Icon(Icons.call,
+                                      color: Colors.green.shade600),
                                   onPressed: () async {
                                     await FlutterContacts.openExternalEdit(
                                         contactList![index].id.toString());
                                   },
-                                  icon: Icon(Icons.call,
-                                      color: Colors.green[600]),
-                                  tooltip: 'Call',
                                 ),
                                 IconButton(
+                                  icon: Icon(Icons.delete,
+                                      color: Colors.red.shade600),
                                   onPressed: () {
                                     showDialog(
                                       context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Remove Contact'),
-                                          content: Text(
-                                              'Are you sure you want to remove ${contactList![index].name}?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop(),
-                                              child: Text('Cancel'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                deleteContact(contactList![index]);
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text('Remove',
-                                                  style: TextStyle(
-                                                      color: Colors.red)),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                      builder: (_) => AlertDialog(
+                                        title: Text('Remove Contact'),
+                                        content: Text(
+                                            'Are you sure you want to remove ${contactList![index].name}?'),
+                                        actions: [
+                                          TextButton(
+                                            child: Text('Cancel'),
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                          ),
+                                          TextButton(
+                                            child: Text('Remove',
+                                                style: TextStyle(
+                                                    color: Colors.red)),
+                                            onPressed: () {
+                                              deleteContact(contactList![index]);
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     );
                                   },
-                                  icon: Icon(Icons.delete,
-                                      color: Colors.red[600]),
-                                  tooltip: 'Delete',
                                 ),
                               ],
                             ),
@@ -231,6 +223,52 @@ class _ContactsPageState extends State<ContactsPage> {
                         );
                       },
                     ),
+            ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Add your "get location" function here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: Text(
+                      'GET LOCATION',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 1),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Add your "send alert" function here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: Text(
+                      'SEND ALERT',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 1),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -4,17 +4,12 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:http/http.dart' as http;
-import 'package:title_proj/child/WelcomeScreen.dart';
-import 'package:title_proj/child/bottom_page.dart';
-import 'package:title_proj/components/custom_textfield.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,36 +19,32 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emergencyContactController = TextEditingController();
+  final TextEditingController _codeWordController = TextEditingController();
 
-  // State variables
   String? _profileImageUrl;
   bool _isLoading = false;
   bool _notificationsEnabled = true;
-  bool _shakeSOSEnabled = false;
-  bool _isShakeActive = false;
-  StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
+
   Position? _currentPosition;
 
-  // Constants
-  final double _shakeThreshold = 2.7; // Adjust sensitivity (2.5-3.5 is typical)
-  final int _minShakeIntervalMs = 2000; // Minimum time between shakes (2 seconds)
+  // Twilio Credentials
+  final String twilioAccountSid = 'ACf9f5049fb42a7462d7cd83dfc8311280';
+  final String twilioAuthToken = '8de7027b99f6a71f5d95b0ce46df9723';
+  final String twilioPhoneNumber = '+14632836151';
+  final String hardcodedSOSNumber = '+918448018504'; // Replace with desired number
+
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    _initShakeDetection();
-  }
-
-  @override
-  void dispose() {
-    _accelerometerSubscription?.cancel();
-    super.dispose();
+    _speech = stt.SpeechToText();
   }
 
   Future<void> _loadUserData() async {
@@ -61,11 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         if (doc.exists) {
           setState(() {
             _nameController.text = doc['name'] ?? '';
@@ -74,13 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _emergencyContactController.text = doc['emergencyContact'] ?? '';
             _profileImageUrl = doc['profileImageUrl'];
             _notificationsEnabled = doc['notificationsEnabled'] ?? true;
-            _shakeSOSEnabled = doc['shakeSOSEnabled'] ?? false;
-            _isShakeActive = _shakeSOSEnabled;
           });
-
-          if (_shakeSOSEnabled) {
-            _startShakeDetection();
-          }
         }
       }
     } catch (e) {
@@ -90,47 +71,58 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _initShakeDetection() {
-    _accelerometerSubscription = userAccelerometerEvents.listen((event) {
-      if (!_isShakeActive) return;
+  void _startCodeWordListening() async {
+    final status = await Permission.microphone.request();
+    if (!status.isGranted) {
+      Fluttertoast.showToast(msg: 'Microphone permission is required');
+      return;
+    }
 
-      final now = DateTime.now();
-      final timeSinceLastShake = now.difference(_lastShakeTime).inMilliseconds;
+    bool available = await _speech.initialize(
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          if (!_isListening) {
+            _startCodeWordListening(); // Keep listening
+          }
+        }
+      },
+      onError: (error) {
+        debugPrint('Speech error: $error');
+        _startCodeWordListening(); // Keep listening on error
+      },
+    );
 
-      if (timeSinceLastShake < _minShakeIntervalMs) return;
-
-      final acceleration = (event.x.abs() + event.y.abs() + event.z.abs()) / 3;
-
-      if (acceleration > _shakeThreshold) {
-        _lastShakeTime = now;
-        _triggerSOS();
-      }
-    });
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) async {
+          final spoken = result.recognizedWords.toLowerCase().trim();
+          final codeWord = _codeWordController.text.toLowerCase().trim();
+          debugPrint('Heard: $spoken');
+          if (spoken.contains(codeWord)) {
+            _speech.stop();
+            setState(() => _isListening = false);
+            await _triggerSOS();
+          }
+        },
+        listenMode: stt.ListenMode.confirmation,
+        partialResults: true,
+      );
+    }
   }
 
-  DateTime _lastShakeTime = DateTime.now();
-
   Future<void> _triggerSOS() async {
-    if (_emergencyContactController.text.isEmpty) {
-      Fluttertoast.showToast(msg: 'No emergency contact set!');
+    if (_nameController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Name is empty!');
       return;
     }
 
     setState(() => _isLoading = true);
-    
     try {
-      // Get current location
-      _currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      // Send SMS via Twilio
+      _currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       final success = await _sendEmergencySMS();
-
       Fluttertoast.showToast(
-        msg: success 
-            ? 'Emergency alert sent!'
-            : 'Failed to send alert',
+        msg: success ? 'Emergency alert sent!' : 'Failed to send alert',
         backgroundColor: success ? Colors.green : Colors.red,
       );
     } catch (e) {
@@ -145,57 +137,35 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<bool> _sendEmergencySMS() async {
-    await dotenv.load();
-    final accountSid = dotenv.get('TWILIO_ACCOUNT_SID');
-    final authToken = dotenv.get('TWILIO_AUTH_TOKEN');
-    final twilioNumber = dotenv.get('TWILIO_PHONE_NUMBER');
-
     final locationUrl = 'https://maps.google.com/?q=${_currentPosition!.latitude},${_currentPosition!.longitude}';
     final message = 'EMERGENCY! ${_nameController.text} needs help! Location: $locationUrl';
 
     final response = await http.post(
-      Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json'),
+      Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$twilioAccountSid/Messages.json'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ${base64Encode(utf8.encode('$accountSid:$authToken'))}',
+        'Authorization': 'Basic ${base64Encode(utf8.encode('$twilioAccountSid:$twilioAuthToken'))}',
       },
       body: {
-        'From': twilioNumber,
-        'To': _emergencyContactController.text,
+        'From': twilioPhoneNumber,
+        'To': hardcodedSOSNumber,
         'Body': message,
       },
     );
 
-    return response.statusCode == 201;
-  }
-
-  void _startShakeDetection() async {
-    final status = await Permission.sensors.status;
-    if (!status.isGranted) {
-      await Permission.sensors.request();
-    }
-    setState(() => _isShakeActive = true);
-  }
-
-  void _stopShakeDetection() {
-    setState(() => _isShakeActive = false);
+    return response.statusCode == 201 || response.statusCode == 200;
   }
 
   Future<void> _updateProfile() async {
     setState(() => _isLoading = true);
     try {
       final user = FirebaseAuth.instance.currentUser!;
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .update({
-            'name': _nameController.text,
-            'phone': _phoneController.text,
-            'emergencyContact': _emergencyContactController.text,
-            'notificationsEnabled': _notificationsEnabled,
-            'shakeSOSEnabled': _shakeSOSEnabled,
-          });
-
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        'name': _nameController.text,
+        'phone': _phoneController.text,
+        'emergencyContact': _emergencyContactController.text,
+        'notificationsEnabled': _notificationsEnabled,
+      });
       Fluttertoast.showToast(msg: 'Profile updated');
     } catch (e) {
       debugPrint('Update error: $e');
@@ -210,16 +180,15 @@ class _ProfilePageState extends State<ProfilePage> {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
 
-      setState(() => _isLoading = true);
-      // Here you would upload to Firebase Storage and get URL
-      // For now we'll just use the local path
-      setState(() => _profileImageUrl = image.path);
-      
+      setState(() {
+        _isLoading = true;
+        _profileImageUrl = image.path;
+      });
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .update({'profileImageUrl': image.path});
-
     } catch (e) {
       debugPrint('Image error: $e');
     } finally {
@@ -233,10 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _updateProfile,
-          ),
+          IconButton(icon: const Icon(Icons.save), onPressed: _updateProfile),
         ],
       ),
       body: _isLoading
@@ -245,7 +211,6 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Profile Picture
                   GestureDetector(
                     onTap: _updateProfilePicture,
                     child: CircleAvatar(
@@ -261,75 +226,29 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Profile Form
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Full Name'),
-                  ),
+                  TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full Name')),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    readOnly: true,
-                  ),
+                  TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), readOnly: true),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(labelText: 'Phone'),
-                    keyboardType: TextInputType.phone,
-                  ),
+                  TextFormField(controller: _phoneController, decoration: const InputDecoration(labelText: 'Phone'), keyboardType: TextInputType.phone),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _emergencyContactController,
-                    decoration: const InputDecoration(
-                      labelText: 'Emergency Contact',
-                      hintText: '+1234567890',
-                      prefixText: '+',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Emergency Contact', hintText: '+1234567890'),
                     keyboardType: TextInputType.phone,
                   ),
-                  const SizedBox(height: 24),
-
-                  // SOS Settings
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          SwitchListTile(
-                            title: const Text('Enable Shake SOS'),
-                            value: _shakeSOSEnabled,
-                            onChanged: (value) async {
-                              setState(() => _shakeSOSEnabled = value);
-                              if (value) {
-                                await Permission.location.request();
-                                await Permission.sms.request();
-                                _startShakeDetection();
-                              } else {
-                                _stopShakeDetection();
-                              }
-                            },
-                          ),
-                          if (_shakeSOSEnabled) ...[
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Shake your phone to trigger emergency alert',
-                              style: TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                            const SizedBox(height: 8),
-                            OutlinedButton(
-                              onPressed: _triggerSOS,
-                              child: const Text('TEST SOS NOW'),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _codeWordController,
+                    decoration: const InputDecoration(labelText: 'Code Word (e.g. help me)'),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.mic),
+                    label: const Text('Start Code Word Listener'),
+                    onPressed: _startCodeWordListening,
                   ),
                   const SizedBox(height: 24),
-
-                  // Notifications
                   SwitchListTile(
                     title: const Text('Enable Notifications'),
                     value: _notificationsEnabled,

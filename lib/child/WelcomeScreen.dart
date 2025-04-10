@@ -142,13 +142,13 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 40),
-                    Text(
-                      'Tanya and Himanshu Reserved @2025',
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
+                    // Text(
+                    //   'Tanya and Himanshu Reserved @2025',
+                    //   style: GoogleFonts.poppins(
+                    //     color: Colors.grey,
+                    //     fontSize: 12,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
