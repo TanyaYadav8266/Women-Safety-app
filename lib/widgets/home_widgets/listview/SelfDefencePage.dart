@@ -2,326 +2,1128 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CarouselItem {
-  final String image; // Image path (local asset)
-  final String heading; // Heading for the card
-  final String url; // URL to open when the card is clicked
-
-  CarouselItem({required this.image, required this.heading, required this.url});
-}
-
 class SelfDefencePage extends StatelessWidget {
-  // Define the color scheme
-  final Color primaryColor = Color.fromRGBO(255, 33, 117, 1); // Updated app bar color
-  final Color secondaryColor = Color.fromRGBO(248, 7, 89, 1);
+  // Color scheme
+  final Color primaryColor = Color(0xFFE91E63); // Pink
+  final Color secondaryColor = Color(0xFF9C27B0); // Purple
+  final Color accentColor = Color(0xFFFF9800); // Orange
+  final Color backgroundColor = Color(0xFFF5F5F5); // Light grey
 
-  // Define the sections
-  final List<String> sections = [
-    "Fundamentals of Self-Defense",
-    "Situational Awareness & Prevention",
-    "Legal Rights & Safety Laws",
-    "Emergency Response & First Aid",
-    "Myth vs. Reality in Self-Defense",
-    "Mental Preparedness & Confidence Building",
+  // Define the sections with icons
+  final List<Map<String, dynamic>> sections = [
+    {
+      "title": "Fundamentals of Self-Defense",
+      "icon": Icons.self_improvement,
+      "color": Color(0xFFE91E63),
+      "image": "assets/fundamentals.png"
+    },
+    {
+      "title": "Situational Awareness",
+      "icon": Icons.remove_red_eye,
+      "color": Color(0xFF2196F3),
+      "image": "assets/situational.png"
+    },
+    {
+      "title": "Legal Rights & Laws",
+      "icon": Icons.gavel,
+      "color": Color(0xFF4CAF50),
+      "image": "assets/legalrights.jpeg"
+    },
+    {
+      "title": "Emergency Response",
+      "icon": Icons.emergency,
+      "color": Color(0xFFF44336),
+      "image": "assets/emergencyresponse.jpeg"
+    },
+    {
+      "title": "Myth vs. Reality",
+      "icon": Icons.lightbulb_outline,
+      "color": Color(0xFFFFC107),
+      "image": "assets/myth.jpeg"
+    },
+    {
+      "title": "Mental Preparedness",
+      "icon": Icons.psychology,
+      "color": Color(0xFF9C27B0),
+      "image": "assets/mentalprepartion.jpeg"
+    },
   ];
 
-  // Define content for each section
-  final List<List<CarouselItem>> sectionContent = [
-    // 1️⃣ Fundamentals of Self-Defense
-    [
-      CarouselItem(
-        image: "assets/basic_moves.jpg",
-        heading: "Basic Self-Defense Moves",
-        url: "https://www.youtube.com/watch?v=KVpxP3ZZtAc",
-      ),
-      CarouselItem(
-        image: "assets/escape_tactics.jpg",
-        heading: "Escape Tactics",
-        url: "https://www.youtube.com/watch?v=ZNCDqzTtgdI",
-      ),
-      CarouselItem(
-        image: "assets/group_defense.png",
-        heading: "Group Defense",
-        url: "https://www.youtube.com/watch?v=WCn4GBcs84s",
-      ),
-      CarouselItem(
-        image: "assets/armed_attackers.png",
-        heading: "Defense Against Armed Attackers",
-        url: "https://www.youtube.com/watch?v=HapjUMYDOAY",
-      ),
-      CarouselItem(
-        image: "assets/everyday_objects.png",
-        heading: "Using Everyday Objects for Protection",
-        url: "https://www.youtube.com/watch?v=IxhgoElQ5so",
-      ),
-      CarouselItem(
-        image: "assets/de_escalation.png",
-        heading: "De-escalation & Conflict Avoidance",
-        url: "https://www.youtube.com/watch?v=bJas3YTYaaQ",
-      ),
+  // Content for each category
+  final Map<String, List<Map<String, dynamic>>> categoryContent = {
+    "Fundamentals of Self-Defense": [
+      {
+        "title": "Basic Strikes",
+        "description": "Learn palm heel, elbow, and knee strikes",
+        "video": "https://www.youtube.com/watch?v=KVpxP3ZZtAc",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Escape Techniques",
+        "description": "Break free from wrist grabs and holds",
+        "video": "https://www.youtube.com/watch?v=ZNCDqzTtgdI",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Ground Defense",
+        "description": "Protect yourself when knocked down",
+        "video": "https://www.youtube.com/watch?v=WCn4GBcs84s",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Weapon Defense Basics",
+        "description": "What to do against armed attackers",
+        "video": "https://www.youtube.com/watch?v=HapjUMYDOAY",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Using Everyday Objects",
+        "description": "Turn common items into defensive tools",
+        "video": "https://www.youtube.com/watch?v=IxhgoElQ5so",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "De-escalation Techniques",
+        "description": "Verbal strategies to avoid violence",
+        "video": "https://www.youtube.com/watch?v=bJas3YTYaaQ",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Multiple Attackers",
+        "description": "Strategies when outnumbered",
+        "video": "https://www.youtube.com/watch?v=example1",
+        "duration": "12 min",
+        "type": "Video"
+      },
+      {
+        "title": "Defensive Stances",
+        "description": "Proper positioning for self-defense",
+        "video": "https://www.youtube.com/watch?v=example2",
+        "duration": "4 min",
+        "type": "Video"
+      },
+      {
+        "title": "Target Areas",
+        "description": "Most effective places to strike",
+        "video": "https://www.youtube.com/watch?v=example3",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Building Reflexes",
+        "description": "Drills to improve reaction time",
+        "video": "https://www.youtube.com/watch?v=example4",
+        "duration": "7 min",
+        "type": "Video"
+      },
     ],
+    "Situational Awareness": [
+      {
+        "title": "Recognizing Threats",
+        "description": "Identify potential danger signs",
+        "video": "https://www.youtube.com/watch?v=example5",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Body Language",
+        "description": "How to appear confident and aware",
+        "video": "https://www.youtube.com/watch?v=example6",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "Public Transport Safety",
+        "description": "Staying safe on buses and trains",
+        "video": "https://www.youtube.com/watch?v=example7",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Nighttime Safety",
+        "description": "Precautions after dark",
+        "video": "https://www.youtube.com/watch?v=example8",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Parking Lot Safety",
+        "description": "Avoiding danger in parking areas",
+        "video": "https://www.youtube.com/watch?v=example9",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Social Situations",
+        "description": "Handling unwanted attention",
+        "video": "https://www.youtube.com/watch?v=example10",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Travel Safety",
+        "description": "Staying safe in unfamiliar places",
+        "video": "https://www.youtube.com/watch?v=example11",
+        "duration": "11 min",
+        "type": "Video"
+      },
+      {
+        "title": "Digital Awareness",
+        "description": "Online safety practices",
+        "video": "https://www.youtube.com/watch?v=example12",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Home Security",
+        "description": "Making your living space safer",
+        "video": "https://www.youtube.com/watch?v=example13",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Intuition Development",
+        "description": "Trusting and honing your gut feelings",
+        "video": "https://www.youtube.com/watch?v=example14",
+        "duration": "6 min",
+        "type": "Video"
+      },
+    ],
+    "Legal Rights & Laws": [
+      {
+        "title": "Self-Defense Laws",
+        "description": "When force is legally justified",
+        "video": "https://www.youtube.com/watch?v=example15",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Women's Safety Laws",
+        "description": "Key legal protections and rights",
+        "video": "https://www.youtube.com/watch?v=example16",
+        "duration": "12 min",
+        "type": "Video"
+      },
+      {
+        "title": "Reporting an Incident",
+        "description": "FIR process and contacting authorities",
+        "video": "https://www.youtube.com/watch?v=example17",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Protection Orders",
+        "description": "How to obtain and enforce them",
+        "video": "https://www.youtube.com/watch?v=example18",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Evidence Collection",
+        "description": "What to preserve after an incident",
+        "video": "https://www.youtube.com/watch?v=example19",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Court Procedures",
+        "description": "What to expect in legal proceedings",
+        "video": "https://www.youtube.com/watch?v=example20",
+        "duration": "11 min",
+        "type": "Video"
+      },
+      {
+        "title": "Cyber Laws",
+        "description": "Protection against online harassment",
+        "video": "https://www.youtube.com/watch?v=example21",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Workplace Harassment",
+        "description": "Legal remedies available",
+        "video": "https://www.youtube.com/watch?v=example22",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Domestic Violence Laws",
+        "description": "Protections and legal options",
+        "video": "https://www.youtube.com/watch?v=example23",
+        "duration": "12 min",
+        "type": "Video"
+      },
+      {
+        "title": "Legal Aid Resources",
+        "description": "Where to find free legal help",
+        "video": "https://www.youtube.com/watch?v=example24",
+        "duration": "6 min",
+        "type": "Video"
+      },
+    ],
+    "Emergency Response": [
+      {
+        "title": "First Aid Basics",
+        "description": "Treating minor injuries and shock",
+        "video": "https://www.youtube.com/watch?v=example25",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Emergency Calls",
+        "description": "How to effectively communicate distress",
+        "video": "https://www.youtube.com/watch?v=example26",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Aftermath Handling",
+        "description": "Dealing with trauma post-incident",
+        "video": "https://www.youtube.com/watch?v=example27",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Bystander Intervention",
+        "description": "How others can safely help",
+        "video": "https://www.youtube.com/watch?v=example28",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Emergency Kit Preparation",
+        "description": "What to keep handy for safety",
+        "video": "https://www.youtube.com/watch?v=example29",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "CPR Basics",
+        "description": "Life-saving techniques everyone should know",
+        "video": "https://www.youtube.com/watch?v=example30",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Choking Rescue",
+        "description": "Helping someone who's choking",
+        "video": "https://www.youtube.com/watch?v=example31",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Bleeding Control",
+        "description": "Stopping severe bleeding",
+        "video": "https://www.youtube.com/watch?v=example32",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Mental Health First Aid",
+        "description": "Supporting emotional trauma",
+        "video": "https://www.youtube.com/watch?v=example33",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Emergency Contacts",
+        "description": "Who to call in different situations",
+        "video": "https://www.youtube.com/watch?v=example34",
+        "duration": "4 min",
+        "type": "Video"
+      },
+    ],
+    "Myth vs. Reality": [
+      {
+        "title": "Fighting Back Always Works",
+        "description": "Understanding when to resist",
+        "video": "https://www.youtube.com/watch?v=example35",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Strength vs. Technique",
+        "description": "Why technique matters more",
+        "video": "https://www.youtube.com/watch?v=example36",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "Self-Defense Tools",
+        "description": "Evaluating effectiveness",
+        "video": "https://www.youtube.com/watch?v=example37",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Escape is Cowardly",
+        "description": "Why running can be the best option",
+        "video": "https://www.youtube.com/watch?v=example38",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Martial Arts Requirement",
+        "description": "Simple techniques anyone can learn",
+        "video": "https://www.youtube.com/watch?v=example39",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Attackers are Strangers",
+        "description": "Most dangers come from known people",
+        "video": "https://www.youtube.com/watch?v=example40",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Weapons Equal Safety",
+        "description": "Risks of carrying weapons",
+        "video": "https://www.youtube.com/watch?v=example41",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Screaming Attracts Help",
+        "description": "Effective ways to call for assistance",
+        "video": "https://www.youtube.com/watch?v=example42",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "Fighting Fair",
+        "description": "No rules in self-defense situations",
+        "video": "https://www.youtube.com/watch?v=example43",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Police Response Times",
+        "description": "Realistic expectations of help",
+        "video": "https://www.youtube.com/watch?v=example44",
+        "duration": "7 min",
+        "type": "Video"
+      },
+    ],
+    "Mental Preparedness": [
+      {
+        "title": "Staying Calm Under Threat",
+        "description": "Managing fear and panic",
+        "video": "https://www.youtube.com/watch?v=example45",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "De-escalation Techniques",
+        "description": "Talking your way out of danger",
+        "video": "https://www.youtube.com/watch?v=example46",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Fear vs. Awareness",
+        "description": "Understanding productive caution",
+        "video": "https://www.youtube.com/watch?v=example47",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "Confidence Building",
+        "description": "Developing a protective mindset",
+        "video": "https://www.youtube.com/watch?v=example48",
+        "duration": "9 min",
+        "type": "Video"
+      },
+      {
+        "title": "Visualization Techniques",
+        "description": "Mental rehearsal for safety",
+        "video": "https://www.youtube.com/watch?v=example49",
+        "duration": "5 min",
+        "type": "Video"
+      },
+      {
+        "title": "Post-Trauma Recovery",
+        "description": "Healing after an incident",
+        "video": "https://www.youtube.com/watch?v=example50",
+        "duration": "10 min",
+        "type": "Video"
+      },
+      {
+        "title": "Assertiveness Training",
+        "description": "Setting boundaries confidently",
+        "video": "https://www.youtube.com/watch?v=example51",
+        "duration": "8 min",
+        "type": "Video"
+      },
+      {
+        "title": "Stress Management",
+        "description": "Techniques to stay composed",
+        "video": "https://www.youtube.com/watch?v=example52",
+        "duration": "7 min",
+        "type": "Video"
+      },
+      {
+        "title": "Decision Making Under Stress",
+        "description": "How to think clearly in danger",
+        "video": "https://www.youtube.com/watch?v=example53",
+        "duration": "6 min",
+        "type": "Video"
+      },
+      {
+        "title": "Building Resilience",
+        "description": "Developing mental toughness",
+        "video": "https://www.youtube.com/watch?v=example54",
+        "duration": "9 min",
+        "type": "Video"
+      },
+    ],
+  };
 
-    // 2️⃣ Situational Awareness & Prevention
-    [
-      CarouselItem(
-        image: "assets/unsafe_situations.jpg",
-        heading: "Recognizing Unsafe Situations – Signs of potential threats",
-        url: "https://activeshootersurvivaltraining.com/recognizing-early-warning-signs-of-potential-threats/",
-      ),
-      CarouselItem(
-        image: "assets/avoiding_target.jpg",
-        heading: "Avoiding Being a Target – Body language, safe walking strategies",
-        url: "https://www.girlswhofight.co/post/body-language-victim-selection-how-to-lower-risk-by-walking-confidently",
-      ),
-      CarouselItem(
-        image: "assets/travel_safety.jpg",
-        heading: "Travel Safety Tips – Public transport, cabs, and night-time safety",
-        url: "https://www.ucl.ac.uk/estates/our-services/security-ucl/staying-safe-ucl/8-top-tips-stay-safe-public-transport",
-      ),
-      CarouselItem(
-        image: "assets/safe_social.jpg",
-        heading: "Safe Social Interactions – Handling strangers and public confrontations",
-        url: "https://nickwignall.com/confrontations/",
-      ),
-      CarouselItem(
-        image: "assets/home_digital_safety.jpg",
-        heading: "Home & Digital Safety – Preventing stalking and online threats",
-        url: "https://www.techtarget.com/searchsecurity/definition/cyberstalking",
-      ),
-    ],
+  // Featured training content
+  final List<Map<String, dynamic>> featuredTraining = [
+    {
+      "image": "assets/5mins.jpeg",
+      "title": "5-Minute Daily Training",
+      "description": "Quick daily exercises",
+      "content": """
+1. Palm Heel Strike - Practice striking with the base of your palm
+2. Elbow Strikes - Practice forward and backward elbow strikes
+3. Knee Strikes - Practice lifting knees to strike
+4. Front Kick - Practice kicking with the ball of your foot
+5. Groin Kick - Practice quick upward kicks
 
-    // 3️⃣ Legal Rights & Safety Laws
-    [
-      CarouselItem(
-        image: "assets/self_defense_laws.jpg",
-        heading: "Self-Defense Laws – When force is legally justified",
-        url: "https://www.leadindia.law/blog/en/ipc-section-100/",
-      ),
-      CarouselItem(
-        image: "assets/reporting_incident.png",
-        heading: "Reporting an Incident – FIR process and contacting authorities",
-        url: "https://www.smilefoundationindia.org/blog/important-legal-rights-of-women-in-india/",
-      ),
-      CarouselItem(
-        image: "assets/womens_safety_laws.jpg",
-        heading: "Women’s Safety Laws – Key legal protections and rights",
-        url: "https://lawchakra.in/blog/laws-protecting-womens-rights-india/",
-      ),
-      CarouselItem(
-        image: "assets/protection_orders.jpg",
-        heading: "Protection Orders – Restraining orders and legal measures",
-        url: "https://lawlex.org/lex-pedia/what-is-permissible-for-women-to-carry-in-order-to-protect-themselves/21054",
-      ),
-      CarouselItem(
-        image: "assets/legal_help.jpg",
-        heading: "Seeking Legal Help – Accessing lawyers and support organizations",
-        url: "https://www.lexisnexis.in/blogs/laws-for-women-in-india/",
-      ),
-    ],
+Repeat each move 10 times on both sides
+""",
+      "video": "https://www.youtube.com/watch?v=KVpxP3ZZtAc"
+    },
+    {
+      "image": "assets/5essentialmoves.avif",
+      "title": "5 Essential Moves",
+      "description": "Basic techniques every woman should know",
+      "content": """
+1. Wrist Release - Twist and pull to break free from wrist grabs
+2. Bear Hug Escape - Drop weight and elbow strike
+3. Choke Defense - Tuck chin, grab attacker's hands, and counter
+4. Hair Grab Defense - Grab attacker's hand and twist
+5. Ground Defense - Use legs to create distance and kick
 
-    // 4️⃣ Emergency Response & First Aid
-    [
-      CarouselItem(
-        image: "assets/emergency_steps.jpg",
-        heading: "What to Do in an Emergency – Steps for immediate safety",
-        url: "https://studylib.net/doc/25496021/nstp-2-module-5--first-aid-and-emergency-management",
-      ),
-      CarouselItem(
-        image: "assets/sos_calls.jpg",
-        heading: "Effective SOS Calls – How to communicate distress quickly",
-        url: "https://cpr.heart.org/",
-      ),
-      CarouselItem(
-        image: "assets/first_aid.jpg",
-        heading: "Basic First Aid – Treating minor injuries and shock",
-        url: "https://www.americansti.org/",
-      ),
-      CarouselItem(
-        image: "assets/self_defense_aftermath.jpg",
-        heading: "Self-Defense Aftermath – Handling trauma and seeking help",
-        url: "https://cprcertificationnow.com/blogs/mycpr-now-blog/empowering-women-through-first-aid-training-and-leadership",
-      ),
-      CarouselItem(
-        image: "assets/bystander_intervention.jpg",
-        heading: "Bystander Intervention – How others can safely help",
-        url: "https://cprcertificationnow.com/blogs/mycpr-now-blog/empowering-women-in-cpr-and-first-aid-training",
-      ),
-    ],
+Practice with a partner for best results
+""",
+      "video": "https://www.youtube.com/watch?v=ZNCDqzTtgdI"
+    },
+    {
+      "image": "assets/escape.jpg",
+      "title": "Escape Techniques",
+      "description": "How to break free from common holds",
+      "content": """
+1. Front Grab - Use leverage to break free
+2. Rear Grab - Drop weight and elbow strike
+3. Arm Hold - Rotate and strike vulnerable areas
+4. Shirt Grab - Twist and break the grip
+5. Ground Pin - Create space and roll away
 
-    // 5️⃣ Myth vs. Reality in Self-Defense
-    [
-      CarouselItem(
-        image: "assets/fighting_back.jpg",
-        heading: "Fighting Back Always Works – Understanding when to resist",
-        url: "https://thelegalcrusader.in/self-defense-law-in-context-with-indian-laws/",
-      ),
-      CarouselItem(
-        image: "assets/strength_vs_technique.png",
-        heading: "Strength vs. Technique – Why technique matters more",
-        url: "https://www.thetimes.co.uk/article/i-used-my-21st-birthday-money-to-patent-an-app-that-protects-women-vf0bkqgt3",
-      ),
-      CarouselItem(
-        image: "assets/pepper_spray.jpg",
-        heading: "Pepper Spray is Enough – Evaluating self-defense tools",
-        url: "https://lawlex.org/lex-pedia/what-is-permissible-for-women-to-carry-in-order-to-protect-themselves/21054",
-      ),
-      CarouselItem(
-        image: "assets/running_option.jpg",
-        heading: "Running Isn’t an Option – When escape is the best defense",
-        url: "https://www.theguardian.com/society/2024/oct/16/uk-women-who-suffer-cardiac-arrest-in-public-less-likely-to-get-cpr-study-finds",
-      ),
-      CarouselItem(
-        image: "assets/martial_artists.jpg",
-        heading: "Only Martial Artists Can Defend – Simple techniques for everyone",
-        url: "https://people.com/most-first-aid-dummies-do-not-have-breasts-which-jeopardizes-women-health-8751320",
-      ),
-    ],
+Focus on vulnerable areas: eyes, nose, throat, groin
+""",
+      "video": "https://www.youtube.com/watch?v=WCn4GBcs84s"
+    },
+    {
+      "image": "assets/weapon.jpeg",
+      "title": "Weapon Defense",
+      "description": "What to do when facing armed attackers",
+      "content": """
+1. Knife Defense - Redirect and control the weapon arm
+2. Gun Defense - Move off the line of fire
+3. Stick Defense - Block and counter quickly
+4. Multiple Attackers - Keep moving and create distance
+5. Improvised Weapons - Use everyday objects for defense
 
-    // 6️⃣ Mental Preparedness & Confidence Building
-    [
-      CarouselItem(
-        image: "assets/staying_calm.jpg",
-        heading: "Staying Calm Under Threat – Managing fear and panic",
-        url: "https://cprcertificationnow.com/blogs/mycpr-now-blog/empowering-women-through-first-aid-training-and-leadership",
-      ),
-      CarouselItem(
-        image: "assets/de_escalation_techniques.jpg",
-        heading: "De-escalation Techniques – Talking your way out of danger",
-        url: "https://cprcertificationnow.com/blogs/mycpr-now-blog/empowering-women-in-cpr-and-first-aid-training",
-      ),
-      CarouselItem(
-        image: "assets/fear_vs_awareness.png",
-        heading: "Fear vs. Awareness – Understanding productive caution",
-        url: "https://studylib.net/doc/25496021/nstp-2-module-5--first-aid-and-emergency-management",
-      ),
-      CarouselItem(
-        image: "assets/confidence_training.jpg",
-        heading: "Confidence Through Training – Practicing moves for real-world use",
-        url: "https://cpr.heart.org/",
-      ),
-      CarouselItem(
-        image: "assets/safety_mindset.jpg",
-        heading: "Building a Safety Mindset – Making self-defense a habit",
-        url: "https://www.americansti.org/",
-      ),
-    ],
+Remember: Your safety is the priority - escape when possible
+""",
+      "video": "https://www.youtube.com/watch?v=HapjUMYDOAY"
+    },
+    {
+      "image": "assets/escapetechnique.jpg",
+      "title": "Verbal Self-Defense",
+      "description": "Using your voice to de-escalate situations",
+      "content": """
+1. Strong Voice - Project confidence in your tone
+2. Boundary Setting - Clear "No" statements
+3. De-escalation - Calming techniques
+4. Distraction - Creating opportunities to escape
+5. Help Commands - How to effectively call for help
+
+Practice with a partner to build confidence
+""",
+      "video": "https://www.youtube.com/watch?v=bJas3YTYaaQ"
+    },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
         title: Text(
-          'Self Defence Training',
-          style: TextStyle(color: Colors.white),
+          'Women\'s Self Defense',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
+        centerTitle: true,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              // Implement search functionality
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Text(
-              'Hello,\nReady for today\'s training?',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
+            // Hero Section
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [primaryColor, secondaryColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Empower Yourself',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Learn essential self-defense techniques and safety knowledge',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 20),
-
-            // Sections
-            for (int i = 0; i < sections.length; i++)
-              _buildSection(sections[i], sectionContent[i]),
+            
+            // Featured Training Section
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Featured Training',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    height: 220,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: featuredTraining.length,
+                      itemBuilder: (context, index) {
+                        final training = featuredTraining[index];
+                        return GestureDetector(
+                          onTap: () {
+                            _showTrainingDetails(context, training);
+                          },
+                          child: Container(
+                            width: 180,
+                            margin: EdgeInsets.only(right: 15),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              elevation: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(15)),
+                                    child: Image.asset(
+                                      training["image"],
+                                      height: 120,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          training["title"],
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 5),
+                                        Text(
+                                          training["description"],
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[700],
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Categories Section
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Learn by Category',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    childAspectRatio: 2.5,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    children: sections.map((section) {
+                      return GestureDetector(
+                        onTap: () {
+                          _navigateToCategory(context, section["title"]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: section["color"].withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: section["color"].withOpacity(0.3)),
+                          ),
+                          padding: EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Icon(section["icon"], 
+                                color: section["color"], 
+                                size: 24),
+                              SizedBox(width: 10),
+                              Flexible(
+                                child: Text(
+                                  section["title"],
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Safety Tips Section
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Quick Safety Tips',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  _buildTipCard(
+                    icon: Icons.phone,
+                    title: "Emergency Numbers",
+                    tip: "Save local emergency numbers in your phone",
+                  ),
+                  _buildTipCard(
+                    icon: Icons.directions_walk,
+                    title: "Walking Safety",
+                    tip: "Stay in well-lit areas and be aware of surroundings",
+                  ),
+                  _buildTipCard(
+                    icon: Icons.group,
+                    title: "Buddy System",
+                    tip: "When possible, travel with a friend",
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Helper function to build a section
-  Widget _buildSection(String title, List<CarouselItem> content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: secondaryColor,
+  void _showTrainingDetails(BuildContext context, Map<String, dynamic> training) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           ),
-        ),
-        SizedBox(height: 10),
-        _buildCarousel(content),
-        SizedBox(height: 20),
-      ],
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Container(
+                height: 5,
+                width: 40,
+                margin: EdgeInsets.only(bottom: 15),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              Text(
+                training["title"],
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.asset(
+                  training["image"],
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(height: 15),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        training["description"],
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Techniques:",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        training["content"],
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        onPressed: () async {
+                          if (await canLaunch(training["video"])) {
+                            await launch(training["video"]);
+                          }
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.play_arrow, size: 24),
+                            SizedBox(width: 10),
+                            Text(
+                              "Watch Training Video",
+                              style: TextStyle(fontSize: 16),
+                              
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  // Helper function to build a carousel
-  Widget _buildCarousel(List<CarouselItem> items) {
-    return CarouselSlider(
-      options: CarouselOptions(
-        aspectRatio: 2.0,
-        autoPlay: true,
-        enlargeCenterPage: true,
+  void _navigateToCategory(BuildContext context, String category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryDetailsPage(
+          title: category,
+          description: _getCategoryDescription(category),
+          image: sections.firstWhere((s) => s["title"] == category)["image"],
+          content: categoryContent[category]!,
+        ),
       ),
-      items: items.map((item) {
-        return Card(
-          elevation: 5.0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: InkWell(
-            onTap: () async {
-              // Open the URL when the card is clicked
-              if (await canLaunch(item.url)) {
-                await launch(item.url);
-              } else {
-                throw 'Could not launch ${item.url}';
-              }
-            },
-            child: Container(
+    );
+  }
+
+  String _getCategoryDescription(String category) {
+    switch (category) {
+      case "Fundamentals of Self-Defense":
+        return "Learn the fundamental techniques of self-defense that form the foundation of personal protection.";
+      case "Situational Awareness":
+        return "Develop your ability to recognize and avoid potentially dangerous situations before they escalate.";
+      case "Legal Rights & Laws":
+        return "Understand your legal rights and the laws that protect you in self-defense situations.";
+      case "Emergency Response":
+        return "Learn how to respond effectively in emergency situations and provide basic first aid.";
+      case "Myth vs. Reality":
+        return "Separate fact from fiction when it comes to self-defense techniques and strategies.";
+      case "Mental Preparedness":
+        return "Develop the mental toughness and confidence needed to protect yourself effectively.";
+      default:
+        return "Comprehensive resources for personal safety and self-defense.";
+    }
+  }
+
+  Widget _buildTipCard({
+    required IconData icon,
+    required String title,
+    required String tip,
+  }) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(15),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                color: primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: primaryColor),
+            ),
+            SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    tip,
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryDetailsPage extends StatelessWidget {
+  final String title;
+  final String description;
+  final String image;
+  final List<Map<String, dynamic>> content;
+
+  const CategoryDetailsPage({
+    required this.title,
+    required this.description,
+    required this.image,
+    required this.content,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
                 image: DecorationImage(
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
-                  image: AssetImage(item.image), // Use AssetImage for local images
                 ),
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
                     colors: [
-                      Color.fromRGBO(0, 0, 0, 0.5), // Equivalent to Colors.black.withOpacity(0.5)
+                      Colors.black.withOpacity(0.6),
                       Colors.transparent,
                     ],
                   ),
                 ),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8, left: 8),
-                    child: Text(
-                      item.heading, // Use the heading from the CarouselItem
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
                         fontSize: 16,
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Available Content",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: content.length,
+                    itemBuilder: (context, index) {
+                      final item = content[index];
+                      return Card(
+                        margin: EdgeInsets.only(bottom: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.all(15),
+                          leading: Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                          title: Text(
+                            item["title"],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(item["description"]),
+                          trailing: Text(item["duration"]),
+                          onTap: () async {
+                            if (await canLaunch(item["video"])) {
+                              await launch(item["video"]);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
