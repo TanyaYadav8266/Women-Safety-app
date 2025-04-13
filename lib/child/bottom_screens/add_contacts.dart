@@ -200,7 +200,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                   const SizedBox(height: 20),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEC407A),
+                      backgroundColor: const Color.fromARGB(255, 6, 1, 2),
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
