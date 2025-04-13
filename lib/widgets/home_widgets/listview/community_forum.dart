@@ -79,8 +79,8 @@ class _CommunityForumState extends State<CommunityForum> {
   bool _isDbInitialized = false;
 
   // Define the primary color and its variants
-  final Color primaryColor = Color(0xFF66BB6A);
-  final Color primaryLightColor = Color(0xFF98EE99);
+  final Color primaryColor = Color.fromARGB(255, 55, 167, 60);
+  final Color primaryLightColor = Color.fromARGB(255, 83, 182, 84);
   final Color primaryDarkColor = Color(0xFF338A3E);
   final Color backgroundColor = Color(0xFFF5F5F5);
 

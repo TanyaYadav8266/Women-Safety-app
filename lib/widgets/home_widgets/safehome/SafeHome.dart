@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:twilio_flutter/twilio_flutter.dart';
+import 'package:another_telephony/telephony.dart';
 
 class SafeHome extends StatefulWidget {
   @override
@@ -12,32 +12,37 @@ class SafeHome extends StatefulWidget {
 class _SafeHomeState extends State<SafeHome> {
   Position? _currentPosition;
   LocationPermission? permission;
-  late TwilioFlutter twilioFlutter;
+  final Telephony telephony = Telephony.instance;
 
   @override
   void initState() {
     super.initState();
-
-    twilioFlutter = TwilioFlutter(
-      accountSid: 'ACf9f5049fb42a7462d7cd83dfc8311280',
-      authToken: '8de7027b99f6a71f5d95b0ce46df9723',
-      twilioNumber: '+14632836151',
-    );
+    _getPermission();
   }
 
   _getPermission() async {
     await [Permission.sms, Permission.location].request();
   }
 
-  _sendSms(String phoneNumber, String message) async {
+  Future<bool> _sendSms(String phoneNumber, String message) async {
     try {
-      final messageSent = await twilioFlutter.sendSMS(
-        toNumber: phoneNumber,
-        messageBody: message,
+      // Check permissions with proper null handling
+      final hasPermission = await telephony.requestSmsPermissions;
+      if (hasPermission != true) {  // Explicit null check
+        throw Exception('SMS permission not granted');
+      }
+
+      // Send SMS
+      await telephony.sendSms(
+        to: phoneNumber,
+        message: message,
       );
+
       Fluttertoast.showToast(msg: "Message sent!");
+      return true;
     } catch (error) {
       Fluttertoast.showToast(msg: "Failed to send message: $error");
+      return false;
     }
   }
 
@@ -67,16 +72,16 @@ class _SafeHomeState extends State<SafeHome> {
     }
   }
 
-  showModelSafeHome(BuildContext context) {
+  void showModelSafeHome(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-      ),
-      builder: (context) {
-        return Padding(
+      builder: (BuildContext context) {  // Proper builder parameter
+        return Container(
           padding: const EdgeInsets.all(24.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -114,11 +119,12 @@ class _SafeHomeState extends State<SafeHome> {
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   if (_currentPosition != null) {
                     String message =
-                        "Emergency! My location is: Lat: ${_currentPosition?.latitude}, Long: ${_currentPosition?.longitude}";
-                    _sendSms("+918448018504", message);
+                        "Emergency! My location is: Lat: ${_currentPosition?.latitude}, "
+                        "Long: ${_currentPosition?.longitude}";
+                    await _sendSms("+918448018504", message);
                   } else {
                     Fluttertoast.showToast(msg: "Location not available yet");
                   }
