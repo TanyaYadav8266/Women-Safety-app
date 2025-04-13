@@ -1,52 +1,97 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
+import 'package:another_telephony/telephony.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EmergencyService {
   static final EmergencyService _instance = EmergencyService._internal();
   factory EmergencyService() => _instance;
   EmergencyService._internal();
 
-  // ⚠️ Hardcoded credentials — replace with your actual Twilio info
-  final String accountSid = 'ACf9f5049fb42a7462d7cd83dfc8311280';
-  final String authToken = '8de7027b99f6a71f5d95b0ce46df9723';
-  final String fromNumber = '+14632836151'; // Your Twilio number
-  final List<String> toNumbers = ['+918448018504']; // Emergency contact numbers
+  final Telephony telephony = Telephony.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> handleEmergency(Position position) async {
+  Future<void> handleEmergency(Position position, {String? customMessage}) async {
     try {
-      await _sendEmergencySMS(position);
+      await _sendEmergencySMS(position, customMessage: customMessage);
     } catch (e) {
       throw Exception('Failed to handle emergency: ${e.toString()}');
     }
   }
 
-  Future<void> _sendEmergencySMS(Position position) async {
-    final locationUrl = 'https://maps.google.com?q=${position.latitude},${position.longitude}';
-    final message = 'EMERGENCY! Need help at: $locationUrl';
+  Future<String?> _getEmergencyContact() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
 
-    for (final toNumber in toNumbers) {
-      try {
-        final response = await http.post(
-          Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json'),
-          headers: {
-            'Authorization': 'Basic ${base64Encode(utf8.encode('$accountSid:$authToken'))}',
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: {
-            'From': fromNumber,
-            'To': toNumber.trim(),
-            'Body': message,
-          },
-        ).timeout(const Duration(seconds: 10));
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (!doc.exists) return null;
 
-        if (response.statusCode != 201) {
-          throw Exception('Failed to send SMS: ${response.body}');
-        }
-      } catch (e) {
-        throw Exception('Failed to send SMS to $toNumber: ${e.toString()}');
+      final emergencyContact = doc.data()?['emergencyContact']?.toString().trim();
+      final userPhone = doc.data()?['phone']?.toString().trim();
+
+      if (emergencyContact?.isNotEmpty ?? false) {
+        return emergencyContact;
+      } else if (userPhone?.isNotEmpty ?? false) {
+        return userPhone;
       }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch emergency contact: ${e.toString()}');
     }
+  }
+
+  Future<void> _sendEmergencySMS(Position position, {String? customMessage}) async {
+    final recipient = await _getEmergencyContact();
+    if (recipient == null) {
+      throw Exception('No emergency contact found in profile');
+    }
+
+    final locationUrl = 'https://maps.google.com?q=${position.latitude},${position.longitude}';
+    final userName = await _getUserName();
+    final codeWord = await _getCodeWord();
+    
+    final message = customMessage ?? 
+      '🚨 EMERGENCY ALERT!\n'
+      '${userName ?? "User"} needs help!\n'
+      'Location: $locationUrl\n'
+      '${codeWord != null ? "Code Word: $codeWord" : ""}';
+
+    final permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
+    if (permissionsGranted != true) {
+      throw Exception('SMS permissions not granted');
+    }
+
+    try {
+      // The sendSms method returns void, so we can't check status
+      await telephony.sendSms(
+        to: recipient,
+        message: message,
+      );
+      
+      // If we get here, we assume the message was sent
+      // Note: This is a limitation of the another_telephony package
+      // For more reliable status checking, consider using a different SMS package
+      // or implement error handling through try-catch
+    } catch (e) {
+      throw Exception('Failed to send SMS: ${e.toString()}');
+    }
+  }
+
+  Future<String?> _getUserName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    return doc.data()?['name']?.toString();
+  }
+
+  Future<String?> _getCodeWord() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    final word = doc.data()?['codeWord']?.toString().trim();
+    return word?.isNotEmpty == true ? word : null;
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +11,8 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:another_telephony/telephony.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:title_proj/widgets/home_widgets/SOSButton/emergency_service.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -35,11 +36,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Position? _currentPosition;
   final Telephony telephony = Telephony.instance;
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
-  double _shakeThreshold = 10.0;
-  int _minShakeCount = 2;
+  double _shakeThreshold = 15.0;
+  int _minShakeCount = 3;
   int _shakeCount = 0;
   DateTime? _lastShakeTime;
-  Duration _shakeWindow = Duration(milliseconds: 800);
+  Duration _shakeWindow = Duration(milliseconds: 1000);
 
   late stt.SpeechToText _speech;
   bool _isListening = false;
@@ -50,9 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializePage();
-    });
+    _initializePage();
   }
 
   Future<void> _initializePage() async {
@@ -139,9 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-    
-    await docRef.set({
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
       'name': user.displayName ?? '',
       'email': user.email ?? '',
       'phone': '',
@@ -149,6 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
       'codeWord': '',
       'notificationsEnabled': true,
       'shakeToAlertEnabled': false,
+      'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 
@@ -170,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     _accelerometerSubscription?.cancel();
     _accelerometerSubscription = accelerometerEvents.listen((event) {
-      final double acceleration = (event.x * event.x + event.y * event.y + event.z * event.z);
+      final double acceleration = (event.x.abs() + event.y.abs() + event.z.abs());
 
       if (acceleration > _shakeThreshold) {
         final now = DateTime.now();
@@ -186,11 +184,10 @@ class _ProfilePageState extends State<ProfilePage> {
         if (_shakeCount >= _minShakeCount) {
           _shakeCount = 0;
           if (!_isTestingShake) {
-            debugPrint('Shake detected! Triggering SOS');
             _triggerSOS();
           } else {
             Fluttertoast.showToast(
-              msg: 'Shake detected! Feature is working',
+              msg: 'Shake detected! Test successful',
               backgroundColor: Colors.green,
             );
           }
@@ -200,37 +197,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _triggerSOS() async {
-    if (_nameController.text.isEmpty || 
-        (_emergencyContactController.text.isEmpty && _phoneController.text.isEmpty)) {
-      Fluttertoast.showToast(msg: 'Please set your name and emergency contact first');
+    if (_nameController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please set your name in profile first');
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      try {
-        _currentPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 5),
-        );
-      } catch (e) {
-        debugPrint('Location error: $e');
-        _currentPosition = null;
-      }
+      _currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 10),
+      );
 
-      final recipient = _emergencyContactController.text.isNotEmpty 
-          ? _emergencyContactController.text 
-          : _phoneController.text;
-
-      final success = await _sendEmergencySMS(recipient);
-      if (success) {
-        Fluttertoast.showToast(
-          msg: 'Emergency alert sent!',
-          backgroundColor: Colors.green,
-        );
-      } else {
-        throw Exception('Failed to send emergency alert');
-      }
+      await EmergencyService().handleEmergency(_currentPosition!);
+      
+      Fluttertoast.showToast(
+        msg: 'Emergency alert sent!',
+        backgroundColor: Colors.green,
+      );
     } catch (e) {
       debugPrint('SOS Error: $e');
       Fluttertoast.showToast(
@@ -239,29 +223,6 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     } finally {
       setState(() => _isLoading = false);
-    }
-  }
-
-  Future<bool> _sendEmergencySMS(String recipient) async {
-    try {
-      final locationInfo = _currentPosition != null
-          ? 'https://maps.google.com/?q=${_currentPosition!.latitude},${_currentPosition!.longitude}'
-          : 'Location unavailable';
-      
-      final message = 'EMERGENCY! ${_nameController.text} needs help!\n'
-          'Location: $locationInfo\n'
-          'Codeword: ${_codeWordController.text.isNotEmpty ? _codeWordController.text : "Not set"}';
-
-      final hasPermission = await telephony.requestSmsPermissions;
-      if (hasPermission != true) {
-        throw Exception('SMS permission not granted');
-      }
-
-      await telephony.sendSms(to: recipient, message: message);
-      return true;
-    } catch (e) {
-      debugPrint('SMS sending error: $e');
-      return false;
     }
   }
 
@@ -283,6 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'codeWord': _codeWordController.text,
         'notificationsEnabled': _notificationsEnabled,
         'shakeToAlertEnabled': _shakeToAlertEnabled,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
 
       await prefs.setBool('shakeToAlertEnabled', _shakeToAlertEnabled);
@@ -352,18 +314,15 @@ class _ProfilePageState extends State<ProfilePage> {
       );
       
       _speech.listen(
-        listenMode: stt.ListenMode.dictation,
         onResult: (result) {
-          final spoken = result.recognizedWords.toLowerCase();
-          final codeWord = _codeWordController.text.toLowerCase();
-          
-          if (spoken.contains(codeWord)) {
+          if (result.recognizedWords.toLowerCase().contains(
+                _codeWordController.text.toLowerCase(),
+              )) {
             Fluttertoast.showToast(msg: 'Code word detected! Sending SOS');
             _triggerSOS();
           }
         },
         cancelOnError: true,
-        partialResults: true,
       );
     } else {
       Fluttertoast.showToast(msg: 'Speech recognition not available');
@@ -373,7 +332,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _testShakeFeature() async {
     setState(() => _isTestingShake = true);
     Fluttertoast.showToast(
-      msg: 'Shake your phone $_minShakeCount times to test',
+      msg: 'Shake your phone $_minShakeCount times quickly to test',
       toastLength: Toast.LENGTH_LONG,
     );
     await Future.delayed(Duration(seconds: 10));
@@ -384,11 +343,17 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profile & Safety'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: _updateProfile,
+            tooltip: 'Save Profile',
+          ),
+          IconButton(
+            icon: const Icon(Icons.emergency),
+            onPressed: _triggerSOS,
+            tooltip: 'Send Emergency Alert',
           ),
         ],
       ),
@@ -398,21 +363,8 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: _updateProfilePicture,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: _profileImageUrl != null
-                          ? _profileImageUrl!.startsWith('http')
-                              ? NetworkImage(_profileImageUrl!)
-                              : FileImage(File(_profileImageUrl!)) as ImageProvider
-                          : null,
-                      child: _profileImageUrl == null
-                          ? const Icon(Icons.person, size: 50)
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  _buildProfileHeader(),
+                  const SizedBox(height: 24),
                   _buildProfileForm(),
                   const SizedBox(height: 24),
                   _buildSafetyFeatures(),
@@ -422,102 +374,173 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfileForm() {
+  Widget _buildProfileHeader() {
     return Column(
       children: [
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(labelText: 'Full Name'),
-          validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _emailController,
-          decoration: const InputDecoration(labelText: 'Email'),
-          readOnly: true,
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _phoneController,
-          decoration: const InputDecoration(labelText: 'Phone'),
-          keyboardType: TextInputType.phone,
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _emergencyContactController,
-          decoration: const InputDecoration(
-            labelText: 'Emergency Contact',
-            hintText: '+1234567890',
+        GestureDetector(
+          onTap: _updateProfilePicture,
+          child: CircleAvatar(
+            radius: 50,
+            backgroundImage: _profileImageUrl != null
+                ? _profileImageUrl!.startsWith('http')
+                    ? NetworkImage(_profileImageUrl!)
+                    : FileImage(File(_profileImageUrl!)) as ImageProvider
+                : const AssetImage('assets/default_profile.png'),
+            child: _profileImageUrl == null
+                ? const Icon(Icons.camera_alt, size: 30, color: Colors.white)
+                : null,
           ),
-          keyboardType: TextInputType.phone,
-          validator: (value) {
-            if (value?.isEmpty ?? true) return 'Required for emergency alerts';
-            if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value!)) {
-              return 'Enter a valid phone number';
-            }
-            return null;
-          },
+        ),
+        const SizedBox(height: 16),
+        Text(
+          _nameController.text.isNotEmpty 
+              ? _nameController.text 
+              : 'No Name Set',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        Text(
+          _emailController.text,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
     );
   }
 
-  Widget _buildSafetyFeatures() {
-    return Column(
-      children: [
-        TextFormField(
-          controller: _codeWordController,
-          decoration: const InputDecoration(
-            labelText: 'Emergency Code Word',
-            hintText: 'e.g. "help me"',
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
-          label: Text(_isListening ? 'Stop Listening' : 'Start Code Word Listener'),
-          onPressed: _toggleListening,
-        ),
-        if (_isListening) ...[
-          const SizedBox(height: 8),
-          const Text('Listening for code word...', style: TextStyle(color: Colors.green)),
-          const SizedBox(height: 8),
-        ],
-        const SizedBox(height: 24),
-        SwitchListTile(
-          title: const Text('Enable Notifications'),
-          value: _notificationsEnabled,
-          onChanged: (value) => setState(() => _notificationsEnabled = value),
-        ),
-        SwitchListTile(
-          title: const Text('Shake to Alert'),
-          subtitle: Text(_sensorsAvailable 
-              ? 'Shake phone to send emergency alert'
-              : 'Shake detection not available on this device'),
-          value: _shakeToAlertEnabled,
-          onChanged: _sensorsAvailable 
-              ? (value) async {
-                  setState(() {
-                    _shakeToAlertEnabled = value;
-                    if (value) {
-                      _testShakeFeature();
-                    }
-                  });
-                  if (value) {
-                    await _startShakeDetection();
-                  } else {
-                    _accelerometerSubscription?.cancel();
-                  }
+  Widget _buildProfileForm() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Full Name',
+                prefixIcon: Icon(Icons.person),
+              ),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email),
+              ),
+              readOnly: true,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                prefixIcon: Icon(Icons.phone),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emergencyContactController,
+              decoration: const InputDecoration(
+                labelText: 'Emergency Contact',
+                hintText: '+1234567890',
+                prefixIcon: Icon(Icons.emergency),
+              ),
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value?.isEmpty ?? true) return 'Required for emergency alerts';
+                if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value!)) {
+                  return 'Enter a valid phone number';
                 }
-              : null,
+                return null;
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Shake your phone $_minShakeCount times quickly to trigger emergency alert',
-          style: TextStyle(color: Colors.grey[600]),
-          textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildSafetyFeatures() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Safety Features',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _codeWordController,
+              decoration: const InputDecoration(
+                labelText: 'Emergency Code Word',
+                hintText: 'e.g. "help me"',
+                prefixIcon: Icon(Icons.security),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
+              label: Text(_isListening ? 'Stop Listening' : 'Start Code Word Listener'),
+              onPressed: _toggleListening,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+            ),
+            if (_isListening) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'Listening for code word...',
+                style: TextStyle(color: Colors.green),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            const SizedBox(height: 24),
+            SwitchListTile(
+              title: const Text('Enable Notifications'),
+              subtitle: const Text('Receive safety alerts and notifications'),
+              value: _notificationsEnabled,
+              onChanged: (value) => setState(() => _notificationsEnabled = value),
+            ),
+            SwitchListTile(
+              title: const Text('Shake to Alert'),
+              subtitle: Text(_sensorsAvailable 
+                  ? 'Shake phone to send emergency alert'
+                  : 'Shake detection not available on this device'),
+              value: _shakeToAlertEnabled,
+              onChanged: _sensorsAvailable 
+                  ? (value) async {
+                      setState(() => _shakeToAlertEnabled = value);
+                      if (value) {
+                        await _startShakeDetection();
+                        _testShakeFeature();
+                      } else {
+                        _accelerometerSubscription?.cancel();
+                      }
+                    }
+                  : null,
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.emergency),
+              label: const Text('Test Emergency Alert'),
+              onPressed: _triggerSOS,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                side: const BorderSide(color: Colors.red),
+              ),
+            ),
+            const SizedBox(height: 8),
+             Text(
+              'Note: Shake your phone $_minShakeCount times quickly to trigger emergency alert',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
