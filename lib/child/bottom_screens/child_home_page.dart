@@ -9,6 +9,7 @@ import 'package:title_proj/widgets/home_widgets/SOSButton/emergency_service.dart
 import 'package:title_proj/widgets/home_widgets/emergency.dart';
 import 'package:title_proj/widgets/home_widgets/safehome/SafeHome.dart';
 import 'package:title_proj/widgets/live_safe.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSosPressed = false;
   final EmergencyService _emergencyService = EmergencyService();
+  BluetoothDevice? _connectedDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -65,13 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: _isSosPressed ? 140 : 150,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color(0xFFEC407A),
-                            // RGB(216, 68, 173)
-                   // RGB(248, 7, 89)
+                            color: const Color(0xFFEC407A),
                             boxShadow: [
                               BoxShadow(
-                                color:  Color.fromARGB(255, 240, 56, 117),
-                                
+                                color: const Color.fromARGB(255, 240, 56, 117),
                                 blurRadius: 20,
                                 spreadRadius: _isSosPressed ? 5 : 10,
                               )
@@ -90,8 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              
-                              
                             ],
                           ),
                         ),
@@ -168,6 +165,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Row(
             children: [
+              // Bluetooth Button
+              IconButton(
+                icon: Icon(
+                  _connectedDevice != null 
+                    ? Icons.bluetooth_connected 
+                    : Icons.bluetooth,
+                  color: _connectedDevice != null 
+                    ? Colors.blue 
+                    : colors.onSurface,
+                ),
+                onPressed: () => _showBluetoothDialog(context),
+              ),
+              const SizedBox(width: 8),
+              
+              // Dark Mode Button
               IconButton(
                 icon: Icon(
                   isDarkMode ? Icons.light_mode : Icons.dark_mode,
@@ -178,6 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               const SizedBox(width: 8),
+              
+              // Profile Button
               GestureDetector(
                 onTap: () => Navigator.push(
                   context,
@@ -278,6 +292,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await _emergencyService.handleEmergency(position);
 
+      // If network fails, try sending via BLE if connected
+      if (_connectedDevice != null) {
+        try {
+          await _sendLocationViaBluetooth(position);
+        } catch (e) {
+          debugPrint('Failed to send via Bluetooth: $e');
+        }
+      }
+
       Navigator.pop(context);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -309,6 +332,123 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: const Duration(seconds: 3),
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _showBluetoothDialog(BuildContext context) async {
+    // Check Bluetooth permissions
+    final status = await Permission.bluetooth.request();
+    if (!status.isGranted) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Bluetooth Permission Required'),
+            content: const Text('Please enable Bluetooth permissions to use this feature'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => openAppSettings(),
+                child: const Text('Open Settings'),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    // Show Bluetooth options
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bluetooth Safety'),
+        content: _connectedDevice != null
+            ? Text('Connected to ${_connectedDevice!.name}')
+            : const Text('Connect to nearby devices to share your location when network is unavailable'),
+        actions: [
+          if (_connectedDevice != null)
+            TextButton(
+              onPressed: () {
+                _disconnectDevice();
+                Navigator.pop(context);
+              },
+              child: const Text('Disconnect'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToBluetoothScreen(context);
+            },
+            child: Text(_connectedDevice != null ? 'Manage' : 'Scan Devices'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _navigateToBluetoothScreen(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BluetoothScreen(connectedDevice: _connectedDevice),
+        fullscreenDialog: true,
+      ),
+    );
+
+    if (result != null && result is BluetoothDevice) {
+      setState(() {
+        _connectedDevice = result;
+      });
+    } else if (result == 'disconnected') {
+      setState(() {
+        _connectedDevice = null;
+      });
+    }
+  }
+
+  Future<void> _disconnectDevice() async {
+    if (_connectedDevice != null) {
+      await _connectedDevice!.disconnect();
+      setState(() {
+        _connectedDevice = null;
+      });
+    }
+  }
+
+  Future<void> _sendLocationViaBluetooth(Position position) async {
+    if (_connectedDevice == null || !_connectedDevice!.isConnected) return;
+
+    try {
+      // Convert position to string format
+      final locationData = 'EMERGENCY|${position.latitude},${position.longitude}|${DateTime.now().toIso8601String()}';
+      
+      // Discover services
+      final services = await _connectedDevice!.discoverServices();
+      
+      // Find the service and characteristic (replace with your actual UUIDs)
+      for (final service in services) {
+        for (final characteristic in service.characteristics) {
+          if (characteristic.properties.write) {
+            await characteristic.write(locationData.codeUnits);
+            debugPrint('Location data sent via BLE');
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending location via BLE: $e');
+      // Attempt to reconnect if there was an error
+      if (_connectedDevice != null) {
+        await _connectedDevice!.connect(autoConnect: false);
       }
     }
   }
@@ -347,6 +487,149 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () => Geolocator.openLocationSettings(),
             child: const Text('Enable Location'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BluetoothScreen extends StatefulWidget {
+  final BluetoothDevice? connectedDevice;
+
+  const BluetoothScreen({super.key, this.connectedDevice});
+
+  @override
+  State<BluetoothScreen> createState() => _BluetoothScreenState();
+}
+
+class _BluetoothScreenState extends State<BluetoothScreen> {
+ final FlutterBluePlus _flutterBlue = FlutterBluePlus();
+
+  List<ScanResult> _devices = [];
+  bool _isScanning = false;
+  BluetoothDevice? _connectedDevice;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectedDevice = widget.connectedDevice;
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    await Permission.bluetooth.request();
+    await Permission.bluetoothConnect.request();
+    await Permission.bluetoothScan.request();
+    await Permission.location.request();
+  }
+
+ Future<void> _scanDevices() async {
+  setState(() {
+    _isScanning = true;
+    _devices = [];
+  });
+
+  try {
+    // Start scanning
+    await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
+
+    // Listen to scan results
+    FlutterBluePlus.onScanResults.listen((results) {
+      setState(() {
+        _devices = results;
+      });
+    });
+  } finally {
+    // Stop scanning after timeout
+    Future.delayed(const Duration(seconds: 10), () async {
+      await FlutterBluePlus.stopScan();
+      setState(() {
+        _isScanning = false;
+      });
+    });
+  }
+}
+
+  Future<void> _connectToDevice(BluetoothDevice device) async {
+    try {
+      setState(() {
+        _isScanning = false;
+      });
+      await FlutterBluePlus.stopScan();
+      
+      await device.connect(autoConnect: false);
+      setState(() {
+        _connectedDevice = device;
+      });
+      
+      Navigator.pop(context, device);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to connect: ${e.toString()}')),
+      );
+    }
+  }
+
+  Future<void> _disconnectDevice() async {
+    if (_connectedDevice != null) {
+      await _connectedDevice!.disconnect();
+      setState(() {
+        _connectedDevice = null;
+      });
+      Navigator.pop(context, 'disconnected');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bluetooth Devices'),
+        actions: [
+          if (_connectedDevice != null)
+            IconButton(
+              icon: const Icon(Icons.link_off),
+              onPressed: _disconnectDevice,
+              tooltip: 'Disconnect',
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: _isScanning ? null : _scanDevices,
+              child: _isScanning
+                  ? const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(width: 8),
+                        Text('Scanning...'),
+                      ],
+                    )
+                  : const Text('Scan for Devices'),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _devices.length,
+              itemBuilder: (context, index) {
+                final device = _devices[index].device;
+                return ListTile(
+                  title: Text(device.name.isEmpty ? 'Unknown Device' : device.name),
+                  subtitle: Text(device.id.toString()),
+                  trailing: _connectedDevice?.id == device.id
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : ElevatedButton(
+                          onPressed: () => _connectToDevice(device),
+                          child: const Text('Connect'),
+                        ),
+                );
+              },
+            ),
           ),
         ],
       ),
