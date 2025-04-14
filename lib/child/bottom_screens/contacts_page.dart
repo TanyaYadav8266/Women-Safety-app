@@ -123,7 +123,7 @@ class _ContactsPageState extends State<ContactsPage> {
                   style: TextStyle(fontSize: 14, letterSpacing: 1)),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: const Color.fromARGB(255, 183, 58, 141),
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -146,7 +146,7 @@ class _ContactsPageState extends State<ContactsPage> {
                         SizedBox(height: 6),
                         Text('Add some contacts to get started',
                             style: TextStyle(color: Colors.grey[500])),
-                      ],
+                      ], 
                     )
                   : ListView.separated(
                       itemCount: count,

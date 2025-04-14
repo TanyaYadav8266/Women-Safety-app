@@ -9,121 +9,105 @@ class AmbulanceEmergency extends StatelessWidget {
   static const _darkTealColor = Color.fromRGBO(0, 121, 107, 1);
   static const _badgeTextColor = Color.fromRGBO(0, 77, 64, 1);
 
-  Future<void> _callAmbulance(BuildContext context) async {
-    try {
-      await FlutterDirectCallerPlugin.callNumber("108");
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not initiate call. Please try again.'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final cardWidth = screenSize.width * 0.95;
-    final cardHeight = screenSize.height * 0.22;
+    final cardWidth = screenSize.width * 0.75; // Matched width
+    final cardHeight = screenSize.height * 0.18; // Matched height
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenSize.width * 0.02,
-        vertical: screenSize.height * 0.01,
-      ),
-      child: Semantics(
-        button: true,
-        label: 'Medical Emergency, call 108 for Ambulance',
-        child: InkWell(
-          onTap: () => _callAmbulance(context),
-          borderRadius: BorderRadius.circular(18),
-          splashColor: Colors.white.withOpacity(0.2),
-          highlightColor: Colors.white.withOpacity(0.1),
-          child: Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Container(
-              width: cardWidth,
-              height: cardHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _tealColor,
-                    _darkTealColor,
-                  ],
-                ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: GestureDetector(
+        onTap: () => FlutterDirectCallerPlugin.callNumber("108"),
+        child: Card(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            width: cardWidth,
+            height: cardHeight,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _tealColor,
+                  _darkTealColor,
+                ],
               ),
-              padding: EdgeInsets.all(screenSize.width * 0.04),
-              child: Row(
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Stack(
                 children: [
-                  // Ambulance Icon
-                  CircleAvatar(
-                    radius: cardHeight * 0.22,
-                    backgroundColor: Colors.white.withOpacity(0.4),
-                    child: Image.asset(
-                      'assets/ambulance.png',
-                      width: cardHeight * 0.3,
-                      height: cardHeight * 0.3,
-                      fit: BoxFit.contain,
-                      semanticLabel: 'Ambulance Icon',
-                    ),
-                  ),
-                  SizedBox(width: cardWidth * 0.04),
-
-                  // Texts
-                  Expanded(
+                  // Icon and Text - Column layout
+                  Positioned(
+                    left: 0,
+                    top: 0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Medical Emergency',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: cardWidth * 0.05,
+                        Container(
+                          width: cardHeight * 0.3,
+                          height: cardHeight * 0.3,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              'assets/ambulance.png',
+                              width: cardHeight * 0.25,
+                              height: cardHeight * 0.25,
+                            ),
                           ),
                         ),
-                        SizedBox(height: cardHeight * 0.02),
-                        Text(
-                          'Call 108 for Ambulance',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: cardWidth * 0.038,
-                          ),
+                        const SizedBox(height: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Medical Emergency',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: cardHeight * 0.16, // Matched size
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Call 108 for Ambulance',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: cardHeight * 0.10, // Matched size
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-
                   // Number Badge
-                  Container(
-                    width: cardWidth * 0.16,
-                    height: cardHeight * 0.26,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        '108',
-                        style: TextStyle(
-                          color: _badgeTextColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: cardWidth * 0.055,
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: cardWidth * 0.18,
+                      height: cardHeight * 0.25,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '108',
+                          style: TextStyle(
+                            color: _badgeTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: cardHeight * 0.2, // Matched size
+                          ),
                         ),
                       ),
                     ),

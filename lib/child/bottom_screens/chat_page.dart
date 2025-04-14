@@ -92,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        backgroundColor: const Color(0xFFEC407A),
+        backgroundColor: Color(0xFFEC407A),
       ),
     );
   }

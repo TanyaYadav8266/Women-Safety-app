@@ -15,88 +15,109 @@ class _SOSButtonState extends State<SOSButton> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final buttonWidth = screenSize.width * 0.7;
-    final buttonHeight = screenSize.height * 0.12;
+    final cardWidth = screenSize.width * 0.75; // Matched width
+    final cardHeight = screenSize.height * 0.18; // Matched height
 
-    return GestureDetector(
-      onTap: _isSending
-          ? null
-          : () async {
-              setState(() => _isSending = true);
-              try {
-                await widget.onPressed();
-              } finally {
-                setState(() => _isSending = false);
-              }
-            },
-      child: Container(
-        width: buttonWidth,
-        height: buttonHeight,
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromRGBO(255, 0, 0, 1),     // Bright red
-              Color.fromRGBO(200, 0, 0, 1),     // Darker red
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: GestureDetector(
+        onTap: _isSending
+            ? null
+            : () async {
+                setState(() => _isSending = true);
+                try {
+                  await widget.onPressed();
+                } finally {
+                  setState(() => _isSending = false);
+                }
+              },
+        child: Card(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.red.withOpacity(0.4),
-              blurRadius: 8,
-              spreadRadius: 2,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Emergency icon
-            Positioned(
-              left: 16,
-              top: buttonHeight * 0.2,
-              child: Icon(
-                Icons.emergency,
-                color: Colors.white.withOpacity(0.8),
-                size: buttonHeight * 0.4,
+          child: Container(
+            width: cardWidth,
+            height: cardHeight,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.fromRGBO(255, 0, 0, 1), // Bright red
+                  Color.fromRGBO(200, 0, 0, 1), // Darker red
+                ],
               ),
             ),
-            // Main content
-            Center(
-              child: Padding(
-                padding: EdgeInsets.only(left: buttonHeight * 0.5),
-                child: _isSending
-                    ? CircularProgressIndicator(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Stack(
+                children: [
+                  // Icon and Text - Column layout
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Siren Icon
+                        Container(
+                          width: cardHeight * 0.3,
+                          height: cardHeight * 0.3,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '🚨',
+                              style: TextStyle(
+                                fontSize: cardHeight * 0.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Text Content
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'SOS EMERGENCY',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: cardHeight * 0.16,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Press for immediate help',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: cardHeight * 0.10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Loading Indicator
+                  if (_isSending)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 3,
-                      )
-                    : Text(
-                        'SOS EMERGENCY',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: buttonWidth * 0.07,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
                       ),
+                    ),
+                ],
               ),
             ),
-            // Alert symbol
-            if (!_isSending)
-              Positioned(
-                right: 16,
-                top: buttonHeight * 0.25,
-                child: Text(
-                  '🚨',
-                  style: TextStyle(
-                    fontSize: buttonHeight * 0.3,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

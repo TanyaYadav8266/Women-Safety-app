@@ -15,35 +15,33 @@ class PoliceStationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
+            borderRadius: BorderRadius.circular(40),
             onTap: () => onMapFunction('Police stations near me'),
             child: Card(
-              elevation: 4,
+              elevation: 3,
+              shape: const CircleBorder(),
               color: isDarkMode ? Colors.grey[800] : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
               child: Container(
-                width: 70,
-                height: 70,
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Option 1: Using Icon (works without assets)
-                    Icon(
-                      Icons.local_police,
-                      size: 32,
-                      color: isDarkMode ? Colors.blue[200] : Colors.blue[800],
-                    ),
-                    
-                    // OR Option 2: Using Image (if you have assets)
-                    // Image.asset(
-                    //   'assets/police.png',
-                    //   color: isDarkMode ? Colors.blue[200] : Colors.blue[800],
-                    // ),
-                  ],
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage('assets/policenearme.png'), // Your police image
+                    fit: BoxFit.cover,
+                    colorFilter: isDarkMode 
+                      ? ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop)
+                      : null,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.transparent,
+                  ),
                 ),
               ),
             ),
@@ -53,7 +51,8 @@ class PoliceStationCard extends StatelessWidget {
             'Police',
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 12,
+              fontSize: 13, // Increased from 12 to match others
+              fontWeight: FontWeight.w500, // Added for consistency
             ),
           ),
         ],

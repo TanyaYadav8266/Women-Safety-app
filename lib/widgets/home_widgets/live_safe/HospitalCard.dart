@@ -15,24 +15,33 @@ class HospitalCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(40),
             onTap: () => onMapFunction('Hospitals near me'),
             child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+              elevation: 3,
+              shape: const CircleBorder(),
               color: isDarkMode ? Colors.grey[800] : Colors.white,
               child: Container(
-                width: 70,
-                height: 70,
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.local_hospital,
-                  size: 32,
-                  color: isDarkMode ? Colors.red[200] : Colors.red[800],
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage('assets/hospitalnearme.png'), // Your hospital image
+                    fit: BoxFit.fitHeight,
+                    colorFilter: isDarkMode 
+                      ? ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop)
+                      : null,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.transparent,
+                  ),
                 ),
               ),
             ),
@@ -42,7 +51,7 @@ class HospitalCard extends StatelessWidget {
             'Hospitals',
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 12,
+              fontSize: 13, // Increased from 12 to 13
               fontWeight: FontWeight.w500,
             ),
           ),

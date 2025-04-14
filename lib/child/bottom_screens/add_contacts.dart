@@ -200,15 +200,21 @@ class _AddContactsPageState extends State<AddContactsPage> {
                   const SizedBox(height: 20),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 6, 1, 2),
+                      backgroundColor: Color(0xFFEC407A),
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     onPressed: pickContact,
-                    icon: const Icon(Icons.person_add_alt_1),
-                    label: const Text("Add Trusted Contact"),
+                    icon: const Icon(Icons.person_add_alt_1,
+                    color: Colors.white),
+                    label: const Text(
+                      "Add Trusted Contact",
+                      style: TextStyle(
+      color: Colors.white, // Added black text color
+    ),
+                      ),
                   ),
                 ],
               ),

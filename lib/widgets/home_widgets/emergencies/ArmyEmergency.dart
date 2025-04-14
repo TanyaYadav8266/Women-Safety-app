@@ -7,14 +7,11 @@ class ArmyEmergency extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final cardWidth = screenSize.width * 0.7;
-    final cardHeight = screenSize.height * 0.18;
+    final cardWidth = screenSize.width * 0.75; // Matched width
+    final cardHeight = screenSize.height * 0.18; // Matched height
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenSize.width * 0.03,
-        vertical: screenSize.height * 0.01,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: GestureDetector(
         onTap: () => FlutterDirectCallerPlugin.callNumber("100"),
         child: Card(
@@ -32,79 +29,86 @@ class ArmyEmergency extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: [
                   Color.fromRGBO(76, 175, 80, 1),  // Army green
-                  Color.fromRGBO(56, 142, 60, 1),   // Darker green
+                  Color.fromRGBO(56, 142, 60, 1),  // Darker green
                 ],
               ),
             ),
-            padding: EdgeInsets.all(screenSize.width * 0.04),
-            child: Stack(
-              children: [
-                // Icon and Text
-                Positioned(
-                  left: 8,
-                  top: 8,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: cardHeight * 0.2,
-                        backgroundColor: Colors.white.withOpacity(0.5),
-                        child: Image.asset(
-                          'assets/police-image.png', // Use appropriate army icon
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Stack(
+                children: [
+                  // Icon and Text - Column layout
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
                           width: cardHeight * 0.3,
                           height: cardHeight * 0.3,
-                        ),
-                      ),
-                      SizedBox(width: cardWidth * 0.04),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Police Emergency',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: cardWidth * 0.06,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              'assets/police-image.png', // Use your army icon asset
+                              width: cardHeight * 0.25,
+                              height: cardHeight * 0.25,
                             ),
                           ),
-                          SizedBox(height: cardHeight * 0.01),
-                          Text(
-                            'Call 100 for emergencies',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: cardWidth * 0.04,
+                        ),
+                        const SizedBox(height: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Army Emergency',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: cardHeight * 0.16, // Matched size
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                // Number Badge
-                Positioned(
-                  right: 12,
-                  bottom: 12,
-                  child: Container(
-                    width: cardWidth * 0.2,
-                    height: cardHeight * 0.25,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Call 100 for emergencies',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: cardHeight * 0.10, // Matched size
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    child: Center(
-                      child: Text(
-                        '100',
-                        style: TextStyle(
-                          color: Colors.green[800],
-                          fontWeight: FontWeight.bold,
-                          fontSize: cardWidth * 0.06,
+                  ),
+                  // Number Badge
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: cardWidth * 0.18,
+                      height: cardHeight * 0.25,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '100',
+                          style: TextStyle(
+                            color: Colors.green[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: cardHeight * 0.2, // Matched size
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
