@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:title_proj/widgets/home_widgets/listview/SelfDefence.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:title_proj/widgets/home_widgets/CustomCarouel.dart';
 import 'package:title_proj/widgets/home_widgets/listview/DetectCamera.dart';
 import 'package:title_proj/widgets/home_widgets/listview/MagnetometerPage.dart';
@@ -69,81 +71,64 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
     }
   }
 
+  static Future<void> openMap(String location) async {
+    String googleUrl = 'https://www.google.com/maps/search/$location';
+    final Uri _url = Uri.parse(googleUrl);
+    try {
+      if (!await launchUrl(_url)) {
+        throw 'Could not launch $_url';
+      }
+    } catch (e) {
+      print('Error launching map: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF5F5F5),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 110, // Reduced expanded height
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: EdgeInsets.only(left: 20, bottom: 16), // Adjusted title padding
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Explore Safety',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24, // Reduced font size
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 4,
-                          color: Colors.black.withOpacity(0.3),
-                          offset: Offset(1, 1),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    'Your comprehensive safety toolkit',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 12, // Reduced font size
-                      shadows: [
-                        Shadow(
-                          blurRadius: 2,
-                          color: Colors.black.withOpacity(0.2),
-                          offset: Offset(1, 1),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFFEC407A),
-                      Color(0xFFAB47BC),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
+      appBar: AppBar(
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Explore Safety',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            pinned: true,
-            actions: [
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.white),
-                onPressed: () {},
+            Text(
+              'Your comprehensive safety toolkit',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 15,
               ),
-            ],
+            ),
+          ],
+        ),
+        backgroundColor: Color(0xFFEC407A),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            onPressed: () {},
           ),
-
+        ],
+      ),
+      body: CustomScrollView(
+        slivers: [
           SliverList(
             delegate: SliverChildListDelegate([
               // Custom Carousel
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Reduced vertical padding
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 child: CustomCarouel(),
               ),
 
+              // Rest of your existing content...
               // Safety Tools Section
               Padding(
                 padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -153,14 +138,14 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
                     Text(
                       'Safety Tools',
                       style: TextStyle(
-                        fontSize: 20, // Reduced font size
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
                       ),
                     ),
-                    SizedBox(height: 10), // Reduced spacing
+                    SizedBox(height: 10),
                     Container(
-                      height: 160, // Reduced height
+                      height: 160,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
@@ -170,7 +155,7 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
                             Icons.camera_alt,
                             'Detect Camera',
                             Color(0xFFEC407A),
-                            DetectCameraIntroPage(),
+                            MagnetometerPage(),
                           ),
                           SizedBox(width: 15),
                           _buildSafetyTool(
@@ -178,7 +163,7 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
                             Icons.analytics,
                             'Risk Analysis',
                             Color(0xFFAB47BC),
-                            RiskAnalysisIntroPage(),
+                            CrimeMapPage(),
                           ),
                           SizedBox(width: 5),
                         ],
@@ -197,48 +182,48 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
                     Text(
                       'Health & Wellbeing',
                       style: TextStyle(
-                        fontSize: 20, // Reduced font size
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
                       ),
                     ),
-                    SizedBox(height: 10), // Reduced spacing
+                    SizedBox(height: 10),
                     GridView.count(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       crossAxisCount: 2,
-                      childAspectRatio: 1.1, // Adjusted aspect ratio to reduce overflow
-                      crossAxisSpacing: 10, // Reduced spacing
-                      mainAxisSpacing: 10, // Reduced spacing
-                      padding: EdgeInsets.zero, // Remove default padding
+                      childAspectRatio: 1.1,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      padding: EdgeInsets.zero,
                       children: [
                         _buildResourceCard(
                           context,
                           Icons.calendar_today,
                           'Period Tracker',
                           Color(0xFFF06292),
-                          PeriodTrackerIntroPage(),
+                          PeriodTrackerPage(),
                         ),
                         _buildResourceCard(
                           context,
                           Icons.psychology,
                           'Mental Health',
                           Color(0xFF26C6DA),
-                          MentalHealthChatIntroPage(),
+                          MentalHealthChat(),
                         ),
                         _buildResourceCard(
                           context,
                           Icons.forum,
                           'Community',
                           Color(0xFF66BB6A),
-                          CommunityForumIntroPage(),
+                          CommunityForum(),
                         ),
                         _buildResourceCard(
                           context,
                           Icons.security,
                           'Self Defence',
                           Color(0xFF7E57C2),
-                          SelfDefenceIntroPage(),
+                          SelfDefencePage(),
                         ),
                       ],
                     ),
@@ -255,7 +240,7 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
                     Text(
                       'Nearby Services',
                       style: TextStyle(
-                        fontSize: 20, // Reduced font size
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333),
                       ),
@@ -305,7 +290,7 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Reduced border radius
+        borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -314,27 +299,27 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
           MaterialPageRoute(builder: (context) => page),
         ),
         child: Container(
-          width: 140, // Reduced width
-          padding: EdgeInsets.all(12), // Reduced padding
+          width: 140,
+          padding: EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(10), // Reduced padding
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 28), // Reduced icon size
+                child: Icon(icon, color: color, size: 28),
               ),
-              SizedBox(height: 8), // Reduced spacing
+              SizedBox(height: 8),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF333333),
-                  fontSize: 12, // Reduced font size
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -348,7 +333,7 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Reduced border radius
+        borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -357,26 +342,26 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
           MaterialPageRoute(builder: (context) => page),
         ),
         child: Padding(
-          padding: EdgeInsets.all(12), // Reduced padding
+          padding: EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(10), // Reduced padding
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 28), // Reduced icon size
+                child: Icon(icon, color: color, size: 28),
               ),
-              SizedBox(height: 8), // Reduced spacing
+              SizedBox(height: 8),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF333333),
-                  fontSize: 12, // Reduced font size
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -388,334 +373,23 @@ class _ExploreMorePageState extends State<ExploreMorePage> {
 
   Widget _buildNearbyService(String title, IconData icon, Color color) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 5), // Added margin for spacing
+      margin: EdgeInsets.symmetric(vertical: 5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
-        onTap: () {
-          // Implement navigation to map with filtered services
-        },
+        onTap: () => openMap('$title near me'),
         leading: Container(
-          padding: EdgeInsets.all(8), // Reduced padding
+          padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: color, size: 20), // Reduced icon size
+          child: Icon(icon, color: color, size: 20),
         ),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)), // Reduced font size
-        subtitle: Text('View nearby locations', style: TextStyle(fontSize: 12)), // Reduced font size
-        trailing: Icon(Icons.arrow_forward, color: color, size: 20), // Reduced icon size
-      ),
-    );
-  }
-}
-
-// Intro Pages with Start Buttons
-class DetectCameraIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Camera Detection'),
-        backgroundColor: Color(0xFFEC407A),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.camera_alt, size: 70, color: Color(0xFFEC407A)), // Reduced icon size
-            SizedBox(height: 15), // Reduced spacing
-            Text(
-              'Hidden Camera Detection',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), // Reduced font size
-            ),
-            SizedBox(height: 15), // Reduced spacing
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30), // Reduced padding
-              child: Text(
-                'Scan your surroundings for hidden cameras using your device sensors',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14), // Reduced font size
-              ),
-            ),
-            SizedBox(height: 25), // Reduced spacing
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFFEC407A),
-                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 12), // Reduced padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18), // Reduced border radius
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MagnetometerPage()),
-                );
-              },
-              child: Text('START DETECTION', style: TextStyle(fontSize: 14)), // Reduced font size
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RiskAnalysisIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Risk Analysis'),
-        backgroundColor: Color(0xFFAB47BC),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.analytics, size: 70, color: Color(0xFFAB47BC)), // Reduced icon size
-            SizedBox(height: 15), // Reduced spacing
-            Text(
-              'Safety Risk Analysis',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), // Reduced font size
-            ),
-            SizedBox(height: 15), // Reduced spacing
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30), // Reduced padding
-              child: Text(
-                'Assess potential risks in your current location or planned route',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14), // Reduced font size
-              ),
-            ),
-            SizedBox(height: 25), // Reduced spacing
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFFAB47BC),
-                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 12), // Reduced padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18), // Reduced border radius
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CrimeMapPage()),
-                );
-              },
-              child: Text('START ANALYSIS', style: TextStyle(fontSize: 14)), // Reduced font size
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class SelfDefenceIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Self Defence'),
-        backgroundColor: Color(0xFF7E57C2),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.self_improvement, size: 80, color: Color(0xFF7E57C2)),
-            SizedBox(height: 20),
-            Text(
-              'Self Defence Training',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Learn essential self-defence techniques and practice virtually',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFF7E57C2),
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SelfDefencePage()),
-                );
-              },
-              child: Text('START TRAINING'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class PeriodTrackerIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Period Tracker'),
-        backgroundColor: Color(0xFFF06292),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.calendar_today, size: 80, color: Color(0xFFF06292)),
-            SizedBox(height: 20),
-            Text(
-              'Period & Health Tracker',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Track your menstrual cycle and receive predictions and health insights',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFFF06292),
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PeriodTrackerPage(),
-                  ),
-                );
-              },
-              child: Text('START TRACKING'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MentalHealthChatIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Mental Health Support'),
-        backgroundColor: Color(0xFF26C6DA),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.psychology, size: 80, color: Color(0xFF26C6DA)),
-            SizedBox(height: 20),
-            Text(
-              'Mental Wellbeing Chat',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Talk to our supportive chatbot about your mental health concerns',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFF26C6DA),
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MentalHealthChat()),
-                );
-              },
-              child: Text('START CHAT'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CommunityForumIntroPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Community Forum'),
-        backgroundColor: Color(0xFF66BB6A),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.forum, size: 80, color: Color(0xFF66BB6A)),
-            SizedBox(height: 20),
-            Text(
-              'Safety Community',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Connect with others, share experiences and safety tips',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                iconColor: Color(0xFF66BB6A),
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CommunityForum()),
-                );
-              },
-              child: Text('VIEW FORUM'),
-            ),
-          ],
-        ),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text('View nearby locations', style: TextStyle(fontSize: 12)),
+        trailing: Icon(Icons.arrow_forward, color: color, size: 20),
       ),
     );
   }

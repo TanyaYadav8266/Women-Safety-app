@@ -418,7 +418,7 @@ class _ProfilePageState extends State<ProfilePage> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.purple, Colors.pink],
+              colors: [Colors.pinkAccent, Colors.pink],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -433,14 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/profile_bg.jpg'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.2),
-              BlendMode.darken,
-            ),
-          ),
+          
         ),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -592,10 +585,17 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
         ElevatedButton.icon(
-          icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
-          label: Text(_isListening ? 'Stop Listening' : 'Start Code Word Listener'),
+          icon: Icon(_isListening ? Icons.mic_off : Icons.mic,
+          color: const Color.fromARGB(255, 255, 255, 255),
+          ),
+          label: Text(_isListening ? 'Stop Listening' : 'Start Code Word Listener',
+          style: TextStyle(
+      color: const Color.fromARGB(255, 255, 255, 255), // Added black text color
+    ),
+
+          ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple,
+            backgroundColor: Colors.pinkAccent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),

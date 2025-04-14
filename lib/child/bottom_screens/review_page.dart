@@ -29,7 +29,11 @@ class _ReviewPageState extends State<ReviewPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text('Location Reviews'),
+        title: Text('Location Reviews',
+        style: TextStyle(
+      color: Colors.white, // Added black text color
+    ),
+        ),
         backgroundColor: primaryColor,
         elevation: 0,
         centerTitle: true,

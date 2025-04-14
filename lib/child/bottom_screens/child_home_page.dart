@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -36,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
+                // Emergency Contacts Section
                 SliverToBoxAdapter(
                   child: _buildSectionHeader(
                     context,
@@ -48,56 +48,60 @@ class _HomeScreenState extends State<HomeScreen> {
                     onSosPressed: () => _handleEmergency(context),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-                // Centered SOS button
+                // SOS Button Section
                 SliverToBoxAdapter(
-                  child: Center(
-                    child: GestureDetector(
-                      onTapDown: (_) => setState(() => _isSosPressed = true),
-                      onTapUp: (_) => setState(() => _isSosPressed = false),
-                      onTapCancel: () => setState(() => _isSosPressed = false),
-                      onTap: () => _handleEmergency(context),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: _isSosPressed ? 110 : 120,
-                        height: _isSosPressed ? 110 : 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [Colors.red[800]!, Colors.red[600]!, Colors.red[400]!],
-                            stops: const [0.1, 0.6, 1.0],
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTapDown: (_) => setState(() => _isSosPressed = true),
+                        onTapUp: (_) => setState(() => _isSosPressed = false),
+                        onTapCancel: () => setState(() => _isSosPressed = false),
+                        onTap: () => _handleEmergency(context),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: _isSosPressed ? 120 : 130,
+                          height: _isSosPressed ? 140 : 150,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFEC407A),
+                            // RGB(216, 68, 173)
+                   // RGB(248, 7, 89)
+                            boxShadow: [
+                              BoxShadow(
+                                color:  Color.fromARGB(255, 240, 56, 117),
+                                
+                                blurRadius: 20,
+                                spreadRadius: _isSosPressed ? 5 : 10,
+                              )
+                            ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withOpacity(0.4),
-                              blurRadius: 15,
-                              spreadRadius: _isSosPressed ? 2 : 5,
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.emergency, color: Colors.white, size: 40),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'SOS',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'SOS',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              
+                              
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
+                // Explore Safety Features Section
                 SliverToBoxAdapter(
                   child: _buildSectionHeader(
                     context,
@@ -106,7 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SliverToBoxAdapter(child: LiveSafe()),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+                // Your Safe Spaces Section
                 SliverToBoxAdapter(
                   child: _buildSectionHeader(
                     context,
@@ -126,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAppBar(BuildContext context, bool isDarkMode, ThemeProvider themeProvider, ColorScheme colors) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

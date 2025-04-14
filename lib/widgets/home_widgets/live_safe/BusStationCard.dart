@@ -15,24 +15,33 @@ class BusStationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(40), // Circular shape
             onTap: () => onMapFunction('Bus Stations near me'),
             child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+              elevation: 3,
+              shape: const CircleBorder(), // Makes the card circular
               color: isDarkMode ? Colors.grey[800] : Colors.white,
               child: Container(
-                width: 70,
-                height: 70,
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.directions_bus,
-                  size: 32,
-                  color: isDarkMode ? Colors.blue[200] : Colors.blue[800],
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle, // Circular container
+                  image: DecorationImage(
+                    image: AssetImage('assets/busstop.png'), // Your image
+                    
+                    colorFilter: isDarkMode 
+                      ? ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop)
+                      : null,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.transparent,
+                  ),
                 ),
               ),
             ),
@@ -42,7 +51,7 @@ class BusStationCard extends StatelessWidget {
             'Bus Stops',
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 12,
+              fontSize: 13, // Increased from 10 to 13
               fontWeight: FontWeight.w500,
             ),
           ),
